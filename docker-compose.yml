@@ -1,0 +1,24 @@
+version: '3'
+services:
+    reports_backend: 
+        build:
+            context: ./src/
+            dockerfile: Dockerfile
+        volumes:
+            - ./src:/var/www/api
+        container_name: reports_backend
+        restart: unless-stopped
+        ports:
+            - '8085:8080'
+        networks:
+            - jmu_network
+        environment:
+            DB_HOST: db-jmu
+            DB_USER:  "dbjmu"
+            DB_PASSWORD: "Afgihn215zxdg"
+            DB_NAME: "jmu"
+networks:
+    jmu_network:
+        external: true
+
+
