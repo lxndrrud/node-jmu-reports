@@ -1,4 +1,5 @@
 import { DataSource } from 'typeorm'
+import { IStudentRepo } from '../repositories/Student.repo'
 
 
 export interface ICreditExamStatementService {
@@ -8,11 +9,14 @@ export interface ICreditExamStatementService {
 
 export class CreditExamStatementService implements ICreditExamStatementService {
     private connection
+    private studentRepo
 
     constructor(
-        connectionInstance: DataSource
+        connectionInstance: DataSource,
+        studentRepoInstance: IStudentRepo
     ) {
         this.connection = connectionInstance
+        this.studentRepo = studentRepoInstance
     }
 
     public async getCreditExamStatement(idGroup: number, idSubjectControl: number, 
