@@ -18,12 +18,6 @@ export class Position {
     })
     idType!: number
 
-    @Column({
-        name: 'abit_id',
-        nullable: true
-    })
-    abitId!: number
-
     @ManyToOne(() => Department, (department) => department.positions)
     @JoinColumn({ name: 'id_department'})
     department!: Department

@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
+import { SpecialtyProfile } from './specialties_profile'
 import { StudyGroup } from './study_groups'
 
 @Entity({ name: 'education.specialties' })
@@ -23,6 +24,6 @@ export class Specialty {
     })
     abitId!: number
 
-    @OneToMany(() => StudyGroup, (group) => group.specialty)
-    groups!: StudyGroup[] 
+    @OneToMany(() => SpecialtyProfile, (specProf) => specProf.specialty)
+    specialtyProfile!: SpecialtyProfile[]
 }

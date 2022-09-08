@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm'
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
 import { Student } from './students'
+import { StudentMark } from './students_marks'
 import { StudyGroup } from './study_groups'
 
 
@@ -36,4 +37,7 @@ export class StudentGroup {
     @ManyToOne(() => StudyGroup, (group) => group.studentGroup)
     @JoinColumn({ name: 'id_group'})
     group!: StudyGroup
+
+    @OneToMany(() => StudentMark, (mark) => mark.studentGroup)
+    marks!: StudentMark[]
 }

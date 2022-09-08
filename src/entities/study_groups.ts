@@ -2,7 +2,9 @@ import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMan
 import { Department } from './departments'
 import { FormEducation } from './form_education'
 import { LevelEducation } from './level_education'
+import { SubjectGroup } from './plan_subject_group'
 import { Specialty } from './specialties'
+import { SpecialtyProfile } from './specialties_profile'
 import { StudentGroup } from './students_groups'
 
 
@@ -57,7 +59,10 @@ export class StudyGroup {
     @JoinColumn({ name: 'id_level' })
     levelEducation!: LevelEducation
 
-    @ManyToOne(() => Specialty, (spec) => spec.groups)
-    @JoinColumn({ name: 'id_specialty' })
-    specialty!: Specialty
+    @ManyToOne(() => SpecialtyProfile, (specProf) => specProf.groups)
+    @JoinColumn({ name: 'id_profile' })
+    specialtyProfile!: SpecialtyProfile
+
+    @OneToMany(() => SubjectGroup, subjGroup => subjGroup.group) 
+    subjectGroups!: SubjectGroup[]
 }

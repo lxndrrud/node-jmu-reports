@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn } from 'typeorm'
 import { PersonsPosition } from './persons_positions'
+import { SubjectControl } from './plan_subject_control'
 
 
 @Entity({ 
@@ -29,4 +30,7 @@ export class Person {
 
     @OneToMany(() => PersonsPosition, (personsPosition) => personsPosition.person)
     personsPosition!: PersonsPosition
+
+    @OneToMany(() => SubjectControl, subjControl => subjControl.person) 
+    subjectControls!: SubjectControl[]
 }
