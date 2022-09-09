@@ -40,5 +40,5 @@ export class SubjectGroup {
     subjectsCreditUnits!: SubjectsCreditUnit[]
 
     @OneToMany(() => SubjectControl, subjControl => subjControl.subjectGroup)
-    subjectControls!: SubjectControl
+    subjectControls!: SubjectControl[]
 }

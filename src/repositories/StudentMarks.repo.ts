@@ -1,10 +1,11 @@
 import { DataSource } from "typeorm";
 import { StudentGroup } from "../entities/students_groups";
-import { StudentMark } from "../entities/students_marks";
+import { BallECTS, StudentWithMark } from "../types/studentMark.type";
 
 
 export interface IMarksRepo {
-    getMarksForGroup(idGroup: number, idSubjectControl: number): Promise<StudentGroup[]>
+    getMarksForGroup(idGroup: number, idSubjectControl: number): Promise<StudentWithMark[]>
+    fillMarkInfo(students: StudentWithMark[], marks: StudentWithMark[]): StudentWithMark[]
 }
 
 export class MarksRepo implements IMarksRepo {
@@ -26,7 +27,7 @@ export class MarksRepo implements IMarksRepo {
             }
         })
 
-        return this.connection.createQueryBuilder(StudentGroup, 'sg')
+        let marks = await  this.connection.createQueryBuilder(StudentGroup, 'sg')
             .innerJoinAndSelect('sg.student', 's')
             .leftJoinAndSelect('sg.marks', 'm')
             //.whereInIds(idsStudentGroups)
@@ -34,5 +35,69 @@ export class MarksRepo implements IMarksRepo {
             .andWhere('m.id_subject_control = :idSubjectControl', { idSubjectControl })
             .andWhere('sg.status = :status', { status: 0 })
             .getMany()
+
+        return this.prepareMarks(marks)
+    }
+
+    private unbalancing(key: 'A' | 'B' | 'C' | 'D' | 'E' | 'FX' | 'F') {
+        const marksMap = {
+            A: 'отлично',
+            B: 'хорошо',
+            C: 'хорошо',
+            D: 'удовлетворительно',
+            E: 'удовлетворительно',
+            FX: 'неудовлетворительно',
+            F: 'неудовлетворительно',
+        };
+        return marksMap[key]
+    }
+
+    private prepareMarks(studentGroups: StudentGroup[]) {
+        /*
+.select(
+      's.id as id_student',
+      's.firstname as student_firstname',
+      's.middlename as student_middlename',
+      's.lastname as student_lastname',
+      'm.id as id_mark',
+      'm.id_subject_control',
+      'm.ball_100',
+      'm.ball_5',
+      'm.ball_ects',
+      'm.created_at',
+      'm.id_user',
+      'm.ip_address_user',
+      'm.id_students_groups',
+    )
+
+        */
+        let result: StudentWithMark[] = []
+        for (let studGroup of studentGroups) {
+            result.push({
+                id_students_groups: studGroup.id,
+                firstname: studGroup.student.firstname,
+                middlename: studGroup.student.middlename,
+                lastname: studGroup.student.lastname,
+                id_mark: studGroup.marks[0].id,
+                ball_5: this.unbalancing(studGroup.marks[0].ballECTS as 
+                    "A" | "B" | "C" | "D" | "E" | "FX" | "F"),
+                ball_100: studGroup.marks[0].ball100,
+                ball_ects: studGroup.marks[0].ballECTS as BallECTS,
+            })
+        }
+        return result
+    }
+
+    public fillMarkInfo(students: StudentWithMark[], marks: StudentWithMark[]) {
+        return students.map((student) => {
+            marks.forEach((mark) => {
+                if (mark.id_students_groups === student.id_students_groups) {
+                student.ball_5 = this.unbalancing(mark.ball_ects as BallECTS)
+                student.ball_100 = mark.ball_100
+                student.ball_ects = mark.ball_ects
+                }
+            });
+            return student;
+        });
     }
 }

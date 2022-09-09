@@ -2,6 +2,9 @@ import { Router } from 'express'
 import { CreditExamStatementsController } from '../controllers/CreditExamStatements.controller'
 import { DatabaseConnection } from '../dbConnection';
 import { StudentRepo } from '../repositories/Student.repo';
+import { MarksRepo } from '../repositories/StudentMarks.repo';
+import { GroupRepo } from '../repositories/StudyGroup.repo';
+import { SubjectRepo } from '../repositories/Subject.repo';
 import { CreditExamStatementService } from '../services/CreditExamStatement.service';
 import { HTTPErrorCreator } from '../utils/HTTPErrorCreator';
 import { ReportCreator } from '../utils/ReportCreator';
@@ -12,7 +15,11 @@ const creditExamController = new CreditExamStatementsController(
     new HTTPErrorCreator(),
     new ReportCreator(new HTTPErrorCreator()),
     new CreditExamStatementService(
-        DatabaseConnection, new StudentRepo(DatabaseConnection))
+        new StudentRepo(DatabaseConnection),
+        new MarksRepo(DatabaseConnection),
+        new GroupRepo(DatabaseConnection),
+        new SubjectRepo(DatabaseConnection)),
+
 )
 
 CreditExamRouter.get('/creditStatement', 
