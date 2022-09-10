@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { DataSource, DataSourceOptions } from 'typeorm'
 import { Department } from './entities/departments'
 import { FormEducation } from './entities/form_education'
@@ -20,16 +21,21 @@ import { StudentGroup } from './entities/students_groups'
 import { StudentMark } from './entities/students_marks'
 import { StudyGroup } from './entities/study_groups'
 import { TypePosition } from './entities/type_position'
+// Для тестирования
 import { StudentRepo } from './repositories/Student.repo'
 import { MarksRepo } from './repositories/StudentMarks.repo'
 import { GroupRepo } from './repositories/StudyGroup.repo'
+import { SubjectRepo } from './repositories/Subject.repo'
+import { CreditExamStatementService } from './services/CreditExamStatement.service'
+import { StudentStatementRepo } from './repositories/StudentStatement.repo'
+import { StudyGroupStatementRepo } from './repositories/StudyGroupStatement.repo'
 
 export const DatabaseConnection = new DataSource(<DataSourceOptions>{
     type: 'postgres',
-    host: "db-jmu",
-    username: 'dbjmu',
-    password: 'Afgihn215zxdg',
-    database: 'jmu',
+    host: process.env.DB_HOST,
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     entities: [
         // Education entities
         Student, StudentGroup, 
@@ -50,17 +56,19 @@ export function InitConnection() {
     DatabaseConnection.initialize()
     .then(async () => {
         console.log('⚡️⚡️⚡️ Подключение к базе установлено ⚡️⚡️⚡️')
+        /* 
+        // Тестирование
+        const service = new CreditExamStatementService(
+            new StudentRepo(DatabaseConnection),
+            new MarksRepo(DatabaseConnection),
+            new GroupRepo(DatabaseConnection),
+            new SubjectRepo(DatabaseConnection),
+            new StudentStatementRepo(DatabaseConnection),
+            new StudyGroupStatementRepo(DatabaseConnection)
+        )
 
-        const studentRepo = new StudentRepo(DatabaseConnection)
-        console.log(await studentRepo.mainInfoByGroup(1))
-
-        const groupRepo = new GroupRepo(DatabaseConnection)
-        console.log((await groupRepo.getGroupInfoWithDirector(1))
-            )
-
-        const marksRepo = new MarksRepo(DatabaseConnection)
-        console.log(await DatabaseConnection.getRepository(StudentMark).find())
-        console.log(await marksRepo.getMarksForGroup(1, 1))
+        console.log(await service.getCreditExamStatement(1, 1, '', undefined))
+        */
     })
     .catch((e) => {
         throw new Error(e)

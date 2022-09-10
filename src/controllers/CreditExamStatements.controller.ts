@@ -28,16 +28,18 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
 
 
     public async getCreditExamStatement(req: Request, res: Response) {
+        // Получить данные
         let {
             idGroup, idSubjectControl, typeStatement, idUser
         } = req.query
         
-
+        // Валидация
         if (!idGroup || !idSubjectControl || !typeStatement) {
             this.errorCreator.badRequest400(res, 'Недостаточно данных для генерации отчёта!')
             return
         }
 
+        // Преобразование к типам
         let pIdGroup = parseInt(idGroup as string), 
             pIdSubjecControl = parseInt(idSubjectControl as string),
             pIdUser = parseInt(idUser as string)

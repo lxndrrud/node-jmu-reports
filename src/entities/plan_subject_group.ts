@@ -5,7 +5,7 @@ import { SubjectsCreditUnit } from './plan_subjects_credit_units'
 import { SubjectControl } from './plan_subject_control'
 import { StudyGroup } from './study_groups'
 
-@Entity({ name: 'education.plan_subject_group' })
+@Entity({ name: 'education.plan_subjects_group' })
 export class SubjectGroup {
     @PrimaryGeneratedColumn()
     id!: number

@@ -7,8 +7,8 @@ export class SpecialtyProfile {
     @PrimaryGeneratedColumn()
     id!: number
 
-    @Column({ name: 'id_profile', nullable: true })
-    idProfile!: number
+    @Column({ name: 'id_specialty', nullable: true })
+    idSpecialty!: number
 
     @Column()
     name!: string
@@ -25,6 +25,7 @@ export class SpecialtyProfile {
     @OneToMany(() => StudyGroup, (group) => group.specialtyProfile)
     groups!: StudyGroup[] 
 
-    @ManyToOne(() => Specialty, (spec) => spec.specialtyProfile) 
+    @ManyToOne(() => Specialty, (spec) => spec.specialtyProfiles)
+    @JoinColumn({ name: 'id_specialty' })
     specialty!: Specialty
 }

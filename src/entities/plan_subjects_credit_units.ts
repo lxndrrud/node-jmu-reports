@@ -11,8 +11,8 @@ export class SubjectsCreditUnit {
     @Column({ name: 'id_subject_group' })
     idSubjectGroup!: number
 
-    @Column({ name: 'id_academicHours' })
-    idAcademicHours!: number
+    @Column({ name: 'id_creditUnits' })
+    idCreditUnits!: number
 
     @Column()
     hour!: string
@@ -22,6 +22,6 @@ export class SubjectsCreditUnit {
     subjectGroup!: SubjectGroup
 
     @ManyToOne(() => CreditUnit, credUnit => credUnit.subjectCreditUnits)
-    @JoinColumn({ name: 'id_creditUnit' })
+    @JoinColumn({ name: 'id_creditUnits' })
     creditUnit!: CreditUnit
 }

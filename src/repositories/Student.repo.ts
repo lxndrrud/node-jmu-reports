@@ -1,12 +1,11 @@
 import { DataSource } from "typeorm";
 import { Student } from "../entities/students";
 import { StudentGroup } from "../entities/students_groups";
-import { StudentMark } from "../entities/students_marks";
-import { BallECTS, StudentWithMark } from "../types/studentMark.type";
+import { StudentMarkResponse } from "../types/studentMark.type";
 
 
 export interface IStudentRepo {
-    mainInfoByGroup(idGroup: number): Promise<StudentWithMark[]>
+    mainInfoByGroup(idGroup: number): Promise<StudentMarkResponse[]>
 }
 
 export class StudentRepo implements IStudentRepo {
@@ -33,7 +32,7 @@ export class StudentRepo implements IStudentRepo {
     }
 
     private prepareStudents(students: Student[]) {
-        let result: StudentWithMark[] = []
+        let result: StudentMarkResponse[] = []
 
         for (let student of students) { 
             result.push({

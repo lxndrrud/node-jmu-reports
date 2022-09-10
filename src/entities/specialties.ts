@@ -10,9 +10,6 @@ export class Specialty {
     @Column()
     name!: string
 
-    @Column()
-    nickname!: string
-
     @Column({
         name: 'minid'
     })
@@ -25,5 +22,5 @@ export class Specialty {
     abitId!: number
 
     @OneToMany(() => SpecialtyProfile, (specProf) => specProf.specialty)
-    specialtyProfile!: SpecialtyProfile[]
+    specialtyProfiles!: SpecialtyProfile[]
 }

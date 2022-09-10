@@ -35,9 +35,9 @@ export class StudyGroup {
     idDepartment!: number
 
     @Column({
-        name: 'id_specialty'
+        name: 'id_profile'
     })
-    idSpecialty!: number
+    idProfile!: number
 
     @Column({
         name: 'date_start'

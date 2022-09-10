@@ -35,7 +35,7 @@ export class SubjectControl {
     formControl!: FormControl
 
     @ManyToOne(() => SubjectGroup, subjGroup => subjGroup.subjectControls)
-    @JoinColumn({ name: 'id_subject_control' })
+    @JoinColumn({ name: 'id_subject_group' })
     subjectGroup!: SubjectGroup
 
     @ManyToOne(() => Person, (person) => person.subjectControls)

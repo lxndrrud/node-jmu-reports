@@ -1,4 +1,4 @@
-export type StudentWithMark = {
+export type StudentMarkResponse = {
     id_students_groups: number;
     firstname: string;
     middlename: string;

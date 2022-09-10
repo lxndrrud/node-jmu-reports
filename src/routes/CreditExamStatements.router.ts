@@ -3,7 +3,9 @@ import { CreditExamStatementsController } from '../controllers/CreditExamStateme
 import { DatabaseConnection } from '../dbConnection';
 import { StudentRepo } from '../repositories/Student.repo';
 import { MarksRepo } from '../repositories/StudentMarks.repo';
+import { StudentStatementRepo } from '../repositories/StudentStatement.repo';
 import { GroupRepo } from '../repositories/StudyGroup.repo';
+import { StudyGroupStatementRepo } from '../repositories/StudyGroupStatement.repo';
 import { SubjectRepo } from '../repositories/Subject.repo';
 import { CreditExamStatementService } from '../services/CreditExamStatement.service';
 import { HTTPErrorCreator } from '../utils/HTTPErrorCreator';
@@ -18,8 +20,10 @@ const creditExamController = new CreditExamStatementsController(
         new StudentRepo(DatabaseConnection),
         new MarksRepo(DatabaseConnection),
         new GroupRepo(DatabaseConnection),
-        new SubjectRepo(DatabaseConnection)),
-
+        new SubjectRepo(DatabaseConnection),
+        new StudentStatementRepo(DatabaseConnection),
+        new StudyGroupStatementRepo(DatabaseConnection)
+    )
 )
 
 CreditExamRouter.get('/creditStatement', 

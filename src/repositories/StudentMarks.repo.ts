@@ -1,11 +1,11 @@
 import { DataSource } from "typeorm";
 import { StudentGroup } from "../entities/students_groups";
-import { BallECTS, StudentWithMark } from "../types/studentMark.type";
+import { BallECTS, StudentMarkResponse } from "../types/studentMark.type";
 
 
 export interface IMarksRepo {
-    getMarksForGroup(idGroup: number, idSubjectControl: number): Promise<StudentWithMark[]>
-    fillMarkInfo(students: StudentWithMark[], marks: StudentWithMark[]): StudentWithMark[]
+    getMarksForGroup(idGroup: number, idSubjectControl: number): Promise<StudentMarkResponse[]>
+    fillMarkInfo(students: StudentMarkResponse[], marks: StudentMarkResponse[]): StudentMarkResponse[]
 }
 
 export class MarksRepo implements IMarksRepo {
@@ -71,16 +71,16 @@ export class MarksRepo implements IMarksRepo {
     )
 
         */
-        let result: StudentWithMark[] = []
+        let result: StudentMarkResponse[] = []
         for (let studGroup of studentGroups) {
+            console.log(studGroup.marks[0])
             result.push({
                 id_students_groups: studGroup.id,
                 firstname: studGroup.student.firstname,
                 middlename: studGroup.student.middlename,
                 lastname: studGroup.student.lastname,
                 id_mark: studGroup.marks[0].id,
-                ball_5: this.unbalancing(studGroup.marks[0].ballECTS as 
-                    "A" | "B" | "C" | "D" | "E" | "FX" | "F"),
+                ball_5: this.unbalancing(studGroup.marks[0].ballECTS as BallECTS),
                 ball_100: studGroup.marks[0].ball100,
                 ball_ects: studGroup.marks[0].ballECTS as BallECTS,
             })
@@ -88,13 +88,14 @@ export class MarksRepo implements IMarksRepo {
         return result
     }
 
-    public fillMarkInfo(students: StudentWithMark[], marks: StudentWithMark[]) {
+    public fillMarkInfo(students: StudentMarkResponse[], marks: StudentMarkResponse[]) {
         return students.map((student) => {
             marks.forEach((mark) => {
                 if (mark.id_students_groups === student.id_students_groups) {
-                student.ball_5 = this.unbalancing(mark.ball_ects as BallECTS)
-                student.ball_100 = mark.ball_100
-                student.ball_ects = mark.ball_ects
+                    student.id_mark = mark.id_mark
+                    student.ball_5 = this.unbalancing(mark.ball_ects as BallECTS)
+                    student.ball_100 = mark.ball_100
+                    student.ball_ects = mark.ball_ects
                 }
             });
             return student;

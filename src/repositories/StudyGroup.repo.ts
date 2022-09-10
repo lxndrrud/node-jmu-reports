@@ -1,4 +1,5 @@
-import { DataSource } from "typeorm";
+import { Brackets, DataSource, QueryBuilder } from "typeorm";
+import { Person } from "../entities/persons";
 import { StudyGroup } from "../entities/study_groups";
 
 
@@ -26,18 +27,43 @@ export class GroupRepo implements IGroupRepo {
         this.groupRepo = this.connection.getRepository(StudyGroup)
     }
 
+    private async checkMainPersonOnDepartment(idGroup: number) {
+        const check = await this.connection.createQueryBuilder(Person, 'person')
+            .leftJoinAndSelect('person.personsPosition', 'personsPosition')
+            .leftJoinAndSelect('personsPosition.position', 'position')
+            .leftJoinAndSelect('position.typePosition', 'typePosition')
+            .leftJoinAndSelect('position.department', 'department')
+            .leftJoinAndSelect('department.groups', 'group')
+            .where('group.id = :idGroup', { idGroup })
+            .andWhere(new Brackets(builder => {
+                builder
+                    .where(`typePosition.name_position = 'Декан'`)
+                    .orWhere(`typePosition.name_position = 'Директор'`)
+            }))
+            .getOne()
+
+        return !!check
+    }
+
     public async getGroupInfoWithDirector(idGroup: number) {
         let result = await  this.connection.createQueryBuilder(StudyGroup, 'group')
             .innerJoinAndSelect('group.levelEducation', 'level')
             .innerJoinAndSelect('group.formEducation', 'form')
-            .innerJoinAndSelect('group.specialty', 'specialty')
+            .innerJoinAndSelect('group.specialtyProfile', 'profile')
+            .innerJoinAndSelect('profile.specialty', 'specialty')
             .leftJoinAndSelect('group.department', 'department')
             .leftJoinAndSelect('department.positions', 'position')
             .leftJoinAndSelect('position.typePosition', 'typePosition')
             .leftJoinAndSelect('position.personsPosition', 'personsPosition')
             .leftJoinAndSelect('personsPosition.person', 'person')
             .where('group.id = :idGroup', { idGroup })
-            .andWhere(`typePosition.name_position = 'Декан' OR typePosition.name_position = 'Директор'`)
+            .andWhere(new Brackets(async builder => {
+                (await this.checkMainPersonOnDepartment(idGroup))
+                &&
+                builder
+                    .where(`typePosition.name_position = 'Декан'`)
+                    .orWhere(`typePosition.name_position = 'Директор'`)
+            }))
             .getOne() as StudyGroup
 
         return this.prepareGroup(result)

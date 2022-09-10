@@ -1,14 +1,16 @@
 import { DataSource } from 'typeorm'
 import { IStudentRepo } from '../repositories/Student.repo'
 import { IMarksRepo } from '../repositories/StudentMarks.repo'
+import { IStudentStatementRepo } from '../repositories/StudentStatement.repo'
 import { IGroupRepo } from '../repositories/StudyGroup.repo'
+import { IStudyGroupStatementRepo } from '../repositories/StudyGroupStatement.repo'
 import { ISubjectRepo } from '../repositories/Subject.repo'
-import { StudentWithMark } from '../types/studentMark.type'
+import { StudentMarkResponse } from '../types/studentMark.type'
 
 
 export interface ICreditExamStatementService {
     getCreditExamStatement(idGroup: number, idSubjectControl: number, typeStatement: string, idUser: number | undefined): Promise<{
-        studentsQuery: StudentWithMark[];
+        studentsQuery: StudentMarkResponse[];
     }>
 }
 
@@ -17,18 +19,23 @@ export class CreditExamStatementService implements ICreditExamStatementService {
     private marksRepo
     private groupRepo
     private subjectRepo
-
+    private studentStatementRepo
+    private groupStatementRepo
 
     constructor(
         studentRepoInstance: IStudentRepo,
         marksRepoInstance: IMarksRepo,
         groupRepoInstance: IGroupRepo,
-        subjectRepoInstance: ISubjectRepo 
+        subjectRepoInstance: ISubjectRepo,
+        studentStatementRepoInstance: IStudentStatementRepo,
+        groupStatementRepoInstance: IStudyGroupStatementRepo
     ) {
         this.studentRepo = studentRepoInstance
         this.marksRepo = marksRepoInstance
         this.groupRepo = groupRepoInstance
         this.subjectRepo = subjectRepoInstance
+        this.studentStatementRepo = studentStatementRepoInstance
+        this.groupStatementRepo = groupStatementRepoInstance
     }
 
     public async getCreditExamStatement(idGroup: number, idSubjectControl: number, 
@@ -43,11 +50,14 @@ export class CreditExamStatementService implements ICreditExamStatementService {
                 this.marksRepo.getMarksForGroup(idGroup, idSubjectControl),
                 this.subjectRepo.getSubjectInfo(idSubjectControl)
             ])
+            .catch(e => { throw e })
 
             studentsQuery = this.marksRepo.fillMarkInfo(studentsQuery, marksQuery)
 
             return {
-                studentsQuery, 
+                studentsQuery,
+                groupQuery,
+                subjectQuery 
             }
         } catch (e) {
             console.error(e)
