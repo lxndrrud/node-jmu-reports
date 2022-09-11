@@ -45,18 +45,21 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
             pIdUser = parseInt(idUser as string)
 
         try {
-            let data = await this.creditExamStatementService.getCreditExamStatement(
-                pIdGroup,
-                pIdSubjecControl,
-                typeStatement as string,
-                pIdUser
-            )
             const reportPath = `Cont/reports/statements/group/gid_${idGroup}/id_subject_control_${idSubjectControl}`
             const reportName = `Зач-экз ведомость (${typeStatement})`
             const templateType = 'education'
             const templateName = 'Зач-экз ведомость'
+            const path = `${reportPath}/${reportName}` 
 
-            this.reportCreator.sendTemplate(res, data, templateType, templateName, reportPath, reportName)
+            let data = await this.creditExamStatementService.getCreditExamStatement(
+                pIdGroup,
+                pIdSubjecControl,
+                typeStatement as string,
+                path,
+                pIdUser
+            )
+
+            await this.reportCreator.sendTemplate(res, data, templateType, templateName, reportPath, reportName)
         } catch (e) {
             this.errorCreator.internalServer500(res, <string> e)
         }

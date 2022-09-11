@@ -1,19 +1,11 @@
 import { Brackets, DataSource, QueryBuilder } from "typeorm";
 import { Person } from "../entities/persons";
 import { StudyGroup } from "../entities/study_groups";
+import { GroupResponse } from "../types/group.type";
 
 
 export interface IGroupRepo {
-    getGroupInfoWithDirector(idGroup: number): Promise<{
-        nickname: string;
-        course: string;
-        specialty_code: string;
-        level_education_name: string;
-        form_education_name: string;
-        date_start: string;
-        department_name: string;
-        director: string;
-    }>
+    getGroupInfoWithDirector(idGroup: number): Promise<GroupResponse>
 }
 
 export class GroupRepo implements IGroupRepo {
@@ -87,7 +79,7 @@ export class GroupRepo implements IGroupRepo {
 
         */
 
-        return {
+        return <GroupResponse>{
             nickname: group.nickname,
             course: group.course,
             specialty_code: group.specialtyProfile.specialty.minId,

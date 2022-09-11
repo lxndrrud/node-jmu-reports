@@ -6,6 +6,7 @@ import { SubjectGroup } from './plan_subject_group'
 import { Specialty } from './specialties'
 import { SpecialtyProfile } from './specialties_profile'
 import { StudentGroup } from './students_groups'
+import { StudyGroupStatement } from './study_group_statements'
 
 
 @Entity({ name: 'education.study_groups' })
@@ -65,4 +66,7 @@ export class StudyGroup {
 
     @OneToMany(() => SubjectGroup, subjGroup => subjGroup.group) 
     subjectGroups!: SubjectGroup[]
+
+    @OneToMany(() => StudyGroupStatement, groupStatement => groupStatement.group)
+    groupStatements!: StudyGroupStatement[]
 }

@@ -3,6 +3,7 @@ import { Person } from './persons'
 import { FormControl } from './plan_form_control'
 import { SubjectGroup } from './plan_subject_group'
 import { StudentMark } from './students_marks'
+import { StudyGroupStatement } from './study_group_statements'
 
 @Entity({ name: 'education.plan_subjects_control' })
 export class SubjectControl {
@@ -41,4 +42,7 @@ export class SubjectControl {
     @ManyToOne(() => Person, (person) => person.subjectControls)
     @JoinColumn({ name: 'idWorker' })
     person!: Person
+
+    @OneToMany(() => StudyGroupStatement, groupStatement => groupStatement.subjectControl)
+    groupStatements!: StudyGroupStatement[] 
 }

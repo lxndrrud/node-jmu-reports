@@ -21,7 +21,10 @@ import { StudentGroup } from './entities/students_groups'
 import { StudentMark } from './entities/students_marks'
 import { StudyGroup } from './entities/study_groups'
 import { TypePosition } from './entities/type_position'
+import { StudyGroupStatement } from './entities/study_group_statements'
+import { TypeStatement } from './entities/type_statement'
 // Для тестирования
+/*
 import { StudentRepo } from './repositories/Student.repo'
 import { MarksRepo } from './repositories/StudentMarks.repo'
 import { GroupRepo } from './repositories/StudyGroup.repo'
@@ -29,6 +32,8 @@ import { SubjectRepo } from './repositories/Subject.repo'
 import { CreditExamStatementService } from './services/CreditExamStatement.service'
 import { StudentStatementRepo } from './repositories/StudentStatement.repo'
 import { StudyGroupStatementRepo } from './repositories/StudyGroupStatement.repo'
+*/
+
 
 export const DatabaseConnection = new DataSource(<DataSourceOptions>{
     type: 'postgres',
@@ -40,7 +45,7 @@ export const DatabaseConnection = new DataSource(<DataSourceOptions>{
         // Education entities
         Student, StudentGroup, 
         StudyGroup, Specialty, SpecialtyProfile,  StudentMark,
-        FormEducation, LevelEducation,
+        FormEducation, LevelEducation, StudyGroupStatement, TypeStatement,
         // PLan
         Subject, FormControl, SubjectControl, SubjectGroup, AcademicHour, CreditUnit,
         SubjectsAcademicHour, SubjectsCreditUnit,

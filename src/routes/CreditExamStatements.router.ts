@@ -7,6 +7,7 @@ import { StudentStatementRepo } from '../repositories/StudentStatement.repo';
 import { GroupRepo } from '../repositories/StudyGroup.repo';
 import { StudyGroupStatementRepo } from '../repositories/StudyGroupStatement.repo';
 import { SubjectRepo } from '../repositories/Subject.repo';
+import { TypeStatementRepo } from '../repositories/TypeStatement.repo';
 import { CreditExamStatementService } from '../services/CreditExamStatement.service';
 import { HTTPErrorCreator } from '../utils/HTTPErrorCreator';
 import { ReportCreator } from '../utils/ReportCreator';
@@ -22,7 +23,8 @@ const creditExamController = new CreditExamStatementsController(
         new GroupRepo(DatabaseConnection),
         new SubjectRepo(DatabaseConnection),
         new StudentStatementRepo(DatabaseConnection),
-        new StudyGroupStatementRepo(DatabaseConnection)
+        new StudyGroupStatementRepo(DatabaseConnection),
+        new TypeStatementRepo(DatabaseConnection)
     )
 )
 
