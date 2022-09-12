@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
 import { Student } from './students'
 import { StudentMark } from './students_marks'
+import { StudentStatement } from './students_statements'
 import { StudyGroup } from './study_groups'
 
 
@@ -9,19 +10,13 @@ export class StudentGroup {
     @PrimaryGeneratedColumn()
     id!: number
 
-    @Column({
-        name: 'record_book'
-    })
+    @Column({ type: "varchar", name: 'record_book', nullable: true })
     recordBook!: string
 
-    @Column({
-        name: 'id_group'
-    })
+    @Column({ name: 'id_group' })
     idGroup!: number
 
-    @Column({
-        name: 'id_student'
-    })
+    @Column({ name: 'id_student' })
     idStudent!: number
 
     @Column()
@@ -40,4 +35,7 @@ export class StudentGroup {
 
     @OneToMany(() => StudentMark, (mark) => mark.studentGroup)
     marks!: StudentMark[]
+
+    @OneToMany(() => StudentStatement, studStatement => studStatement.studentGroup)
+    studentStatements!: StudentStatement[]
 }

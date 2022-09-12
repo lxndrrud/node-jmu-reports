@@ -1,11 +1,13 @@
 import { DataSource } from "typeorm";
 import { Student } from "../entities/students";
 import { StudentGroup } from "../entities/students_groups";
+import { StudentInfoResponse } from "../types/student.type";
 import { StudentMarkResponse } from "../types/studentMark.type";
 
 
 export interface IStudentRepo {
-    mainInfoByGroup(idGroup: number): Promise<StudentMarkResponse[]>
+    getMainInfoByGroup(idGroup: number): Promise<StudentMarkResponse[]>
+    getStudentInfo(idStudent: number, idGroup: number): Promise<StudentInfoResponse>
 }
 
 export class StudentRepo implements IStudentRepo {
@@ -21,17 +23,38 @@ export class StudentRepo implements IStudentRepo {
         this.studentGroupRepo = this.connection.getRepository(StudentGroup)
     }
 
-    public async mainInfoByGroup(idGroup: number) {
+    public async getMainInfoByGroup(idGroup: number) {
         let students = await this.connection.createQueryBuilder(Student, 'student')
             .innerJoinAndSelect('student.studentGroup', 'studentGroup')
             .where('studentGroup.idGroup = :idGroup', { idGroup })
             .andWhere('studentGroup.status = :status', {status: 0})
             .getMany()
 
-        return this.prepareStudents(students)
+        return this.prepareStudentsMarks(students)
     }
 
-    private prepareStudents(students: Student[]) {
+    public async getStudentInfo(idStudent: number, idGroup: number) {
+        let student = await this.connection.createQueryBuilder(Student, 'student')
+            .innerJoinAndSelect('student.studentGroup', 'studentGroup')
+            .where('studentGroup.idStudent = :idStudent', { idStudent })
+            .andWhere('studentGroup.idGroup = :idGroup', { idGroup })
+            .getOne() as Student
+
+        if (!student) throw 'Информация по студенту не найдена'
+        return this.prepareStudentInfo(student)
+    }
+
+    private prepareStudentInfo(student: Student) {
+        return <StudentInfoResponse> {
+            id_students_groups: student.studentGroup[0].id,
+            firstname: student.firstname,
+            middlename: student.middlename,
+            lastname: student.lastname,
+            record_book: student.studentGroup[0].recordBook
+        }
+    }
+
+    private prepareStudentsMarks(students: Student[]) {
         let result: StudentMarkResponse[] = []
 
         for (let student of students) { 

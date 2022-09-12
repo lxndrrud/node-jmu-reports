@@ -1,4 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
+import { StudentStatement } from './students_statements'
 import { StudyGroupStatement } from './study_group_statements'
 
 
@@ -12,4 +13,7 @@ export class TypeStatement {
 
     @OneToMany(() => StudyGroupStatement, groupStatement => groupStatement.typeStatement)
     groupStatements!: StudyGroupStatement[]
+
+    @OneToMany(() => StudentStatement, studStatement => studStatement.typeStatement)
+    studentStatements!: StudentStatement[]
 }

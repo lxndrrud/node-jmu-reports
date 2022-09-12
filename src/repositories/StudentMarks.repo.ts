@@ -73,7 +73,6 @@ export class MarksRepo implements IMarksRepo {
         */
         let result: StudentMarkResponse[] = []
         for (let studGroup of studentGroups) {
-            console.log(studGroup.marks[0])
             result.push({
                 id_students_groups: studGroup.id,
                 firstname: studGroup.student.firstname,

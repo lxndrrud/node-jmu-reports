@@ -23,6 +23,7 @@ import { StudyGroup } from './entities/study_groups'
 import { TypePosition } from './entities/type_position'
 import { StudyGroupStatement } from './entities/study_group_statements'
 import { TypeStatement } from './entities/type_statement'
+import { StudentStatement } from './entities/students_statements'
 // Для тестирования
 /*
 import { StudentRepo } from './repositories/Student.repo'
@@ -45,7 +46,7 @@ export const DatabaseConnection = new DataSource(<DataSourceOptions>{
         // Education entities
         Student, StudentGroup, 
         StudyGroup, Specialty, SpecialtyProfile,  StudentMark,
-        FormEducation, LevelEducation, StudyGroupStatement, TypeStatement,
+        FormEducation, LevelEducation, StudyGroupStatement, StudentStatement, TypeStatement,
         // PLan
         Subject, FormControl, SubjectControl, SubjectGroup, AcademicHour, CreditUnit,
         SubjectsAcademicHour, SubjectsCreditUnit,

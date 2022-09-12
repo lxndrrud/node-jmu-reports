@@ -58,6 +58,7 @@ export class GroupRepo implements IGroupRepo {
             }))
             .getOne() as StudyGroup
 
+        if (!result) throw 'Информация по группе не найдена'
         return this.prepareGroup(result)
     }
 

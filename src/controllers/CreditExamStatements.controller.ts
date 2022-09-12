@@ -29,7 +29,7 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
 
     public async getCreditExamStatement(req: Request, res: Response) {
         // Получить данные
-        let {
+        const {
             idGroup, idSubjectControl, typeStatement, idUser
         } = req.query
         
@@ -40,7 +40,7 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
         }
 
         // Преобразование к типам
-        let pIdGroup = parseInt(idGroup as string), 
+        const pIdGroup = parseInt(idGroup as string), 
             pIdSubjecControl = parseInt(idSubjectControl as string),
             pIdUser = parseInt(idUser as string)
 
@@ -66,10 +66,65 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
     }
 
     public async getCreditExamDebtStatement(req: Request, res: Response) {
+        const { 
+            idGroup, idSubjectControl, idStudent, idUser
+        } = req.query
+
+        if (!idGroup || !idSubjectControl || !idStudent) {
+            this.errorCreator.badRequest400(res, 'Недостаточно данных для генерации отчета!')
+            return
+        }
+
+        const [
+            pIdGroup, pIdSubjectControl, pIdStudent, pIdUser
+        ] = [
+            parseInt(idGroup as string), parseInt(idSubjectControl as string),
+            parseInt(idStudent as string), parseInt(idUser as string)
+        ]
+
+        try {
+            const reportPath = `Cont/reports/student/sid_${pIdStudent}/creditStatements/id_subject_control_${req.query.idSubjectControl}`
+            const reportName = `Хвостовка`
+            const templateType = 'education'
+            const templateName = 'Хвостовка'
+            const path = `${reportPath}/${reportName}` 
+
+            const data = await this.creditExamStatementService.getCreditExamDebtStatement(
+                pIdStudent, pIdGroup, pIdSubjectControl, path, pIdUser)
+
+
+            await this.reportCreator.sendTemplate(res, data, templateType, templateName, reportPath, reportName)
+        } catch(e) {
+            this.errorCreator.internalServer500(res, <string> e)
+        }
 
     }
 
     public async getCreditExamIndividualStatement(req: Request, res: Response) {
+        try {
+            const {
+                idGroup, semester, idFormControl, idStudent, idUser
+            } = req.query
+    
+            if (!idGroup || !semester || !idFormControl || !idStudent) {
+                this.errorCreator.badRequest400(res, 'Недостаточно данных для генерации отчета!')
+                return
+            }
+    
+            const reportPath = `Cont/reports/student/sid_${req.query.idUser}/personalStatements/semester_${req.query.semester}`;
+            const reportName = `Инд зач-экз ведомость`;
+            const templateType = 'education'
+            const templateName = 'Инд зач-экз ведомость';
+            const path = `${reportPath}/${reportName}`
+
+            let data: any
+    
+            await this.reportCreator.sendTemplate(res, data, templateType, templateName, reportPath, reportName)
+        } catch (e) {
+            this.errorCreator.internalServer500(res, <string> e)
+        }
+        
+
         
     }
 

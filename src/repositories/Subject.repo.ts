@@ -63,7 +63,8 @@ export class SubjectRepo implements ISubjectRepo {
             .leftJoinAndSelect('scu.creditUnit', 'cu')
             .andWhere("cu.name = 'экспертное'")
         
-        const result = await query.getOne() as Subject
+        const result = await query.getOne()
+        if (!result) throw 'Информация по предмету не найдена'
         return this.prepareSubject(result)
     }
 
@@ -82,7 +83,6 @@ export class SubjectRepo implements ISubjectRepo {
       'sc.date_retake',
     )
         */
-
         return <SubjectResponse> {
             name: subject.name,
             semester: subject.subjectGroups[0].subjectControls[0].semester,
