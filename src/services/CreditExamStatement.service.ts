@@ -157,6 +157,7 @@ export class CreditExamStatementService implements ICreditExamStatementService {
         const typeStatementQuery = await this.typeStatementRepo.getByName('ИВ')
         if (!typeStatementQuery) throw 'Тип ведомости не определен'
 
+        
 
 
     }

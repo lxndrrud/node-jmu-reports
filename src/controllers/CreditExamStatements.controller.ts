@@ -110,6 +110,13 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
                 this.errorCreator.badRequest400(res, 'Недостаточно данных для генерации отчета!')
                 return
             }
+
+            const [
+                pIdGroup, pIdFormControl, pIdStudent
+            ] = [
+                parseInt(idGroup as string), parseInt(idFormControl as string),
+                parseInt(idStudent as string)
+            ]
     
             const reportPath = `Cont/reports/student/sid_${req.query.idUser}/personalStatements/semester_${req.query.semester}`;
             const reportName = `Инд зач-экз ведомость`;

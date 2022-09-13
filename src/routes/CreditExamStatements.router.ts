@@ -19,7 +19,7 @@ const creditExamController = new CreditExamStatementsController(
     new ReportCreator(new HTTPErrorCreator()),
     new CreditExamStatementService(
         new StudentRepo(DatabaseConnection),
-        new MarksRepo(DatabaseConnection),
+        new MarksRepo(DatabaseConnection, new SubjectRepo(DatabaseConnection)),
         new GroupRepo(DatabaseConnection),
         new SubjectRepo(DatabaseConnection),
         new StudentStatementRepo(DatabaseConnection),

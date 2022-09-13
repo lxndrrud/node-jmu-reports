@@ -24,6 +24,8 @@ import { TypePosition } from './entities/type_position'
 import { StudyGroupStatement } from './entities/study_group_statements'
 import { TypeStatement } from './entities/type_statement'
 import { StudentStatement } from './entities/students_statements'
+import { MarksRepo } from './repositories/StudentMarks.repo'
+import { SubjectRepo } from './repositories/Subject.repo'
 // Для тестирования
 /*
 import { StudentRepo } from './repositories/Student.repo'
@@ -62,6 +64,9 @@ export function InitConnection() {
     DatabaseConnection.initialize()
     .then(async () => {
         console.log('⚡️⚡️⚡️ Подключение к базе установлено ⚡️⚡️⚡️')
+
+        const marksRepo = new MarksRepo(DatabaseConnection, new SubjectRepo(DatabaseConnection))
+        console.log(await marksRepo.getMarksForStudent(1, 1, '1', true))
         /* 
         // Тестирование
         const service = new CreditExamStatementService(
