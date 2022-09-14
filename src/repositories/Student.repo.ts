@@ -7,7 +7,7 @@ import { StudentMarkResponse } from "../types/studentMark.type";
 
 export interface IStudentRepo {
     getMainInfoByGroup(idGroup: number): Promise<StudentMarkResponse[]>
-    getStudentInfo(idStudent: number, idGroup: number): Promise<StudentInfoResponse>
+    getStudentInfo(idStudent: number, idGroup: number, status: string | null): Promise<StudentInfoResponse>
 }
 
 export class StudentRepo implements IStudentRepo {
@@ -33,13 +33,14 @@ export class StudentRepo implements IStudentRepo {
         return this.prepareStudentsMarks(students)
     }
 
-    public async getStudentInfo(idStudent: number, idGroup: number) {
-        let student = await this.connection.createQueryBuilder(Student, 'student')
+    public async getStudentInfo(idStudent: number, idGroup: number, status: string | null) {
+        let query = this.connection.createQueryBuilder(Student, 'student')
             .innerJoinAndSelect('student.studentGroup', 'studentGroup')
             .where('studentGroup.idStudent = :idStudent', { idStudent })
             .andWhere('studentGroup.idGroup = :idGroup', { idGroup })
-            .getOne() as Student
+        if (status) query.andWhere('studentGroup.status = :status', { status })
 
+        let student = await query.getOne() as Student
         if (!student) throw 'Информация по студенту не найдена'
         return this.prepareStudentInfo(student)
     }

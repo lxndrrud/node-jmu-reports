@@ -20,8 +20,8 @@ export class StudentStatement {
     @Column({ name: 'id_type_statement' })
     idTypeStatement!: number
 
-    @Column({ type: 'int', name: 'id_subject_control', nullable: true })
-    idSubjectControl!: number
+    @Column({ type: 'int', name: 'id_subject_control', nullable: true, unsigned: true })
+    idSubjectControl!: number | null
 
     @Column({ type: 'int', name: 'id_user', nullable: true, unsigned: true })
     idUser!: number | null

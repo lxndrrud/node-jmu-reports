@@ -1,5 +1,5 @@
 import moment from "moment";
-import { Brackets, DataSource } from "typeorm";
+import { DataSource } from "typeorm";
 import { Subject } from "../entities/plan_subjects";
 import { SubjectsAcademicHour } from "../entities/plan_subjects_academic_hours";
 import { SubjectsCreditUnit } from "../entities/plan_subjects_credit_units";
@@ -9,6 +9,8 @@ import { SubjectResponse } from "../types/subject.type";
 
 export interface ISubjectRepo {
     getSubjectInfo(idSubjectControl: number): Promise<SubjectResponse>
+    checkCreditUnitsExistence(idSubjectGroup: number): Promise<boolean>
+    checkAcademicHoursExistence(idSubjectGroup: number): Promise<boolean>
 }
 
 export class SubjectRepo implements ISubjectRepo {
@@ -21,7 +23,7 @@ export class SubjectRepo implements ISubjectRepo {
     }
 
 
-    private async checkCreditUnitsExistence(idSubjectGroup: number) {
+    public async checkCreditUnitsExistence(idSubjectGroup: number) {
         const checkExist = await this.connection.createQueryBuilder(SubjectsCreditUnit, 'scu')
           .leftJoinAndSelect('scu.creditUnit', 'cu')
           .where('scu.idSubjectGroup = :idSubjectGroup', { idSubjectGroup })
@@ -30,7 +32,7 @@ export class SubjectRepo implements ISubjectRepo {
         return !!checkExist
     }
 
-    private async checkAcademicHoursExistence(idSubjectGroup: number) {
+    public async checkAcademicHoursExistence(idSubjectGroup: number) {
         const checkExist = await this.connection.createQueryBuilder(SubjectsAcademicHour, 'sah')
             .leftJoinAndSelect('sah.academicHour', 'ah')
             .where('sah.idSubjectGroup = :idSubjectGroup', { idSubjectGroup })
@@ -45,7 +47,7 @@ export class SubjectRepo implements ISubjectRepo {
             .where('sc.id = :idSubjectControl', { idSubjectControl })
             .getOne() as SubjectGroup
 
-        const query = this.connection.createQueryBuilder(Subject, 'subject')
+        let query = this.connection.createQueryBuilder(Subject, 'subject')
             .innerJoinAndSelect('subject.subjectGroups', 'subjectGroup')
             .innerJoinAndSelect('subjectGroup.subjectControls', 'sc')
             .innerJoinAndSelect('sc.formControl', 'formControl')
@@ -69,41 +71,27 @@ export class SubjectRepo implements ISubjectRepo {
     }
 
     private prepareSubject(subject: Subject) {
-        /* Format
-        .select(
-      's.name',
-      'sc.semester',
-      'scu.hour as creditUnits',
-      'sah.hour as hours',
-      'fc.name as form_control_name',
-      'prs.firstname as lecturer_lastname',
-      'prs.name as lecturer_firstname',
-      'prs.lastname as lecturer_middlename',
-      'sc.date_exam',
-      'sc.date_retake',
-    )
-        */
         return <SubjectResponse> {
             name: subject.name,
             semester: subject.subjectGroups[0].subjectControls[0].semester,
             creditUnits: subject.subjectGroups[0].subjectsCreditUnits
                 ? subject.subjectGroups[0].subjectsCreditUnits[0].hour
-                : '',
+                : ' ',
             hours: subject.subjectGroups[0].subjectsAcademicHours
                 ? subject.subjectGroups[0].subjectsAcademicHours[0].hour
-                : '',
+                : ' ',
             form_control_name: subject.subjectGroups[0].subjectControls[0].formControl.name,
             lecturer: subject.subjectGroups[0].subjectControls[0].person 
                 ? subject.subjectGroups[0].subjectControls[0].person.lastname + ' '+
                 subject.subjectGroups[0].subjectControls[0].person.firstname + ' '+
                 subject.subjectGroups[0].subjectControls[0].person.middlename
-                : '',
+                : ' ',
             date_exam: subject.subjectGroups[0].subjectControls[0].dateExam 
                 ?  moment(subject.subjectGroups[0].subjectControls[0].dateExam).format('DD-MM-YYYY').toString() 
-                : '',
+                : ' ',
             date_retake: subject.subjectGroups[0].subjectControls[0].dateRetake 
                 ?  moment(subject.subjectGroups[0].subjectControls[0].dateRetake).format('DD-MM-YYYY').toString() 
-                : ''
+                : ' '
         }
     }
 }

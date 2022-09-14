@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { CreditExamStatementsController } from '../controllers/CreditExamStatements.controller'
 import { DatabaseConnection } from '../dbConnection';
+import { FormControlRepo } from '../repositories/FormControl.repo';
 import { StudentRepo } from '../repositories/Student.repo';
 import { MarksRepo } from '../repositories/StudentMarks.repo';
 import { StudentStatementRepo } from '../repositories/StudentStatement.repo';
@@ -24,15 +25,20 @@ const creditExamController = new CreditExamStatementsController(
         new SubjectRepo(DatabaseConnection),
         new StudentStatementRepo(DatabaseConnection),
         new StudyGroupStatementRepo(DatabaseConnection),
-        new TypeStatementRepo(DatabaseConnection)
+        new TypeStatementRepo(DatabaseConnection),
+        new FormControlRepo(DatabaseConnection)
     )
 )
 
+// Зачетно-экзаменационная
 CreditExamRouter.get('/creditStatement', 
     creditExamController.getCreditExamStatement.bind(creditExamController));
+// Хвостовка
 CreditExamRouter.get('/creditStatementDebt', 
     creditExamController.getCreditExamDebtStatement.bind(creditExamController));
+// Зачетно-экзаменационная на человека
 CreditExamRouter.get('/creditStatementIndividual', 
     creditExamController.getCreditExamIndividualStatement.bind(creditExamController));
+// Журнал группы
 CreditExamRouter.get('/groupJournal', 
     creditExamController.getGroupJournal.bind(creditExamController));

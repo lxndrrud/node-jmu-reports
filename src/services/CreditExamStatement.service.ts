@@ -1,4 +1,5 @@
 import moment from 'moment'
+import { IFormControlRepo } from '../repositories/FormControl.repo'
 import { IStudentRepo } from '../repositories/Student.repo'
 import { IMarksRepo } from '../repositories/StudentMarks.repo'
 import { IStudentStatementRepo } from '../repositories/StudentStatement.repo'
@@ -8,7 +9,7 @@ import { ISubjectRepo } from '../repositories/Subject.repo'
 import { ITypeStatementRepo } from '../repositories/TypeStatement.repo'
 import { GroupResponse } from '../types/group.type'
 import { StudentInfoResponse } from '../types/student.type'
-import { StudentMarkResponse } from '../types/studentMark.type'
+import { MarkWithSubjectResponse, StudentMarkResponse } from '../types/studentMark.type'
 import { SubjectResponse } from '../types/subject.type'
 
 
@@ -39,7 +40,21 @@ export interface ICreditExamStatementService {
             date_sign: string;
         }
     }>
-    
+
+    getCreditExamIndiStatement(idStudent: number, idGroup: number, idFormControl: number, semester: string, path: string, idUser: number | undefined): Promise<{
+        student: StudentInfoResponse;
+        group: GroupResponse;
+        credits: MarkWithSubjectResponse[];
+        exams: MarkWithSubjectResponse[];
+        info: {
+            year_start: number;
+            year_end: number;
+            type: string;
+            number: number;
+            date_sign: string;
+            semester: string;
+        }
+    }>
 }
 
 export class CreditExamStatementService implements ICreditExamStatementService {
@@ -50,6 +65,7 @@ export class CreditExamStatementService implements ICreditExamStatementService {
     private studentStatementRepo
     private groupStatementRepo
     private typeStatementRepo
+    private formControlRepo
 
     constructor(
         studentRepoInstance: IStudentRepo,
@@ -58,7 +74,8 @@ export class CreditExamStatementService implements ICreditExamStatementService {
         subjectRepoInstance: ISubjectRepo,
         studentStatementRepoInstance: IStudentStatementRepo,
         groupStatementRepoInstance: IStudyGroupStatementRepo,
-        typeStatementRepoInstance: ITypeStatementRepo
+        typeStatementRepoInstance: ITypeStatementRepo,
+        formControlRepoInstance: IFormControlRepo
     ) {
         this.studentRepo = studentRepoInstance
         this.marksRepo = marksRepoInstance
@@ -67,6 +84,7 @@ export class CreditExamStatementService implements ICreditExamStatementService {
         this.studentStatementRepo = studentStatementRepoInstance
         this.groupStatementRepo = groupStatementRepoInstance
         this.typeStatementRepo = typeStatementRepoInstance
+        this.formControlRepo = formControlRepoInstance
     }
 
     public async getCreditExamStatement(idGroup: number, idSubjectControl: number, 
@@ -122,7 +140,7 @@ export class CreditExamStatementService implements ICreditExamStatementService {
             ] = await Promise.all([
                 this.groupRepo.getGroupInfoWithDirector(idGroup),
                 this.subjectRepo.getSubjectInfo(idSubjectControl),
-                this.studentRepo.getStudentInfo(idStudent, idGroup),
+                this.studentRepo.getStudentInfo(idStudent, idGroup, null),
             ])
             .catch(e => { throw e }) 
 
@@ -153,12 +171,63 @@ export class CreditExamStatementService implements ICreditExamStatementService {
         }
     }
 
-    public async getCreditExamIndiStatement() {
-        const typeStatementQuery = await this.typeStatementRepo.getByName('ИВ')
-        if (!typeStatementQuery) throw 'Тип ведомости не определен'
+    public async getCreditExamIndiStatement(idStudent: number, idGroup: number, idFormControl: number, semester: string,
+        path: string, idUser: number | undefined) {
+        try {
+            const typeStatementQuery = await this.typeStatementRepo.getByName('ИВ')
+            if (!typeStatementQuery) throw 'Тип ведомости не определен'
 
-        
+            const [
+                groupQuery, studentQuery
+            ] = await Promise.all([
+                this.groupRepo.getGroupInfoWithDirector(idGroup),
+                this.studentRepo.getStudentInfo(idStudent, idGroup, '0')
+            ])
+    
+            let credits: MarkWithSubjectResponse[] = [],
+                exams: MarkWithSubjectResponse[] = []
+            if (idFormControl === -1) {
+                [exams, credits] = await Promise.all([
+                    await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, true),
+                    await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, false)
+                ])
+            } else {
+                const formControl = await this.formControlRepo.getFormControl(idFormControl)
+                if (!formControl) throw 'Форма контроля не распознана'
+                if (formControl.name === 'экзамен') 
+                    exams = await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, true)
+                else if (formControl.name === 'зачет')
+                    credits =  await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, false)
+            }
 
+            const countStatements = await this.studentStatementRepo
+                .countStatements(studentQuery.id_students_groups, null, typeStatementQuery.id)
+                .catch(e => { throw e })
+
+            const info = {
+                year_start: parseInt(groupQuery.date_start),
+                year_end: parseInt(groupQuery.date_start) + 1,
+                type: typeStatementQuery.name,
+                number: countStatements + 1,
+                date_sign: moment().format('DD.MM.YYYY').toString(),
+                semester,
+            }
+
+            await this.studentStatementRepo.saveStatement(studentQuery.id_students_groups, null, 
+                typeStatementQuery.id, path, idUser ? idUser : null)
+
+
+            return {
+                student: studentQuery,
+                group: groupQuery,
+                credits,
+                exams,
+                info
+            }
+        } catch (e) {
+            console.error(e)
+            throw e
+        }
 
     }
 }

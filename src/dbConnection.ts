@@ -24,18 +24,6 @@ import { TypePosition } from './entities/type_position'
 import { StudyGroupStatement } from './entities/study_group_statements'
 import { TypeStatement } from './entities/type_statement'
 import { StudentStatement } from './entities/students_statements'
-import { MarksRepo } from './repositories/StudentMarks.repo'
-import { SubjectRepo } from './repositories/Subject.repo'
-// Для тестирования
-/*
-import { StudentRepo } from './repositories/Student.repo'
-import { MarksRepo } from './repositories/StudentMarks.repo'
-import { GroupRepo } from './repositories/StudyGroup.repo'
-import { SubjectRepo } from './repositories/Subject.repo'
-import { CreditExamStatementService } from './services/CreditExamStatement.service'
-import { StudentStatementRepo } from './repositories/StudentStatement.repo'
-import { StudyGroupStatementRepo } from './repositories/StudyGroupStatement.repo'
-*/
 
 
 export const DatabaseConnection = new DataSource(<DataSourceOptions>{
@@ -64,22 +52,6 @@ export function InitConnection() {
     DatabaseConnection.initialize()
     .then(async () => {
         console.log('⚡️⚡️⚡️ Подключение к базе установлено ⚡️⚡️⚡️')
-
-        const marksRepo = new MarksRepo(DatabaseConnection, new SubjectRepo(DatabaseConnection))
-        console.log(await marksRepo.getMarksForStudent(1, 1, '1', true))
-        /* 
-        // Тестирование
-        const service = new CreditExamStatementService(
-            new StudentRepo(DatabaseConnection),
-            new MarksRepo(DatabaseConnection),
-            new GroupRepo(DatabaseConnection),
-            new SubjectRepo(DatabaseConnection),
-            new StudentStatementRepo(DatabaseConnection),
-            new StudyGroupStatementRepo(DatabaseConnection)
-        )
-
-        console.log(await service.getCreditExamStatement(1, 1, '', undefined))
-        */
     })
     .catch((e) => {
         throw new Error(e)
