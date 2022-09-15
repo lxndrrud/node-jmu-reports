@@ -9,6 +9,7 @@ import { SubjectResponse } from "../types/subject.type";
 
 export interface ISubjectRepo {
     getSubjectInfo(idSubjectControl: number): Promise<SubjectResponse>
+    getSubjectsForGroup(idGroup: number, semester: string, isUnion: boolean): Promise<Subject[]>
     checkCreditUnitsExistence(idSubjectGroup: number): Promise<boolean>
     checkAcademicHoursExistence(idSubjectGroup: number): Promise<boolean>
 }
@@ -45,7 +46,8 @@ export class SubjectRepo implements ISubjectRepo {
         const subjectGroup = await this.connection.createQueryBuilder(SubjectGroup, 'sg')
             .innerJoinAndSelect('sg.subjectControls', 'sc')
             .where('sc.id = :idSubjectControl', { idSubjectControl })
-            .getOne() as SubjectGroup
+            .getOne()
+        if (!subjectGroup) throw 'Информация по предмету не найдена'
 
         let query = this.connection.createQueryBuilder(Subject, 'subject')
             .innerJoinAndSelect('subject.subjectGroups', 'subjectGroup')
@@ -68,6 +70,20 @@ export class SubjectRepo implements ISubjectRepo {
         const result = await query.getOne()
         if (!result) throw 'Информация по предмету не найдена'
         return this.prepareSubject(result)
+    }
+
+    public async getSubjectsForGroup(idGroup: number, semester: string, isUnion: boolean) {
+        const signOfExpression = isUnion ? '<=' : '=' 
+        const subjects = await this.connection.createQueryBuilder(Subject, 'subj')
+            .innerJoinAndSelect('subj.subjectGroup', 'subjG')
+            .innerJoinAndSelect('subjG.subjectControl', 'sc')
+            .innerJoinAndSelect('sc.formControl', 'fc')
+            .innerJoin('subjG.group', 'g')
+            .where('g.id = :idGroup', { idGroup })
+            .andWhere(`sc.semester ${signOfExpression} :semester`, { semester })
+            .orderBy('fc.name', 'ASC')
+            .getMany()
+        return subjects
     }
 
     private prepareSubject(subject: Subject) {

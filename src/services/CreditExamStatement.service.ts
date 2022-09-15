@@ -75,7 +75,7 @@ export class CreditExamStatementService implements ICreditExamStatementService {
         studentStatementRepoInstance: IStudentStatementRepo,
         groupStatementRepoInstance: IStudyGroupStatementRepo,
         typeStatementRepoInstance: ITypeStatementRepo,
-        formControlRepoInstance: IFormControlRepo
+        formControlRepoInstance: IFormControlRepo,
     ) {
         this.studentRepo = studentRepoInstance
         this.marksRepo = marksRepoInstance
@@ -88,146 +88,134 @@ export class CreditExamStatementService implements ICreditExamStatementService {
     }
 
     public async getCreditExamStatement(idGroup: number, idSubjectControl: number, 
-        typeStatement: string, path: string, idUser: number | undefined) {
-  
-        try {
-            const typeStatementQuery = await this.typeStatementRepo.getByName(typeStatement)
-            if (!typeStatementQuery) throw 'Тип ведомости не определен'
+        typeStatement: string, path: string, idUser?: number ) {
+        const typeStatementQuery = await this.typeStatementRepo.getByName(typeStatement)
+        if (!typeStatementQuery) throw 'Тип ведомости не определен'
 
-            let [
-                groupQuery, studentsQuery, marksQuery, subjectQuery, countStatements
-            ] = await Promise.all([
-                this.groupRepo.getGroupInfoWithDirector(idGroup),
-                this.studentRepo.getMainInfoByGroup(idGroup),
-                this.marksRepo.getMarksForGroup(idGroup, idSubjectControl),
-                this.subjectRepo.getSubjectInfo(idSubjectControl),
-                this.groupStatementRepo.countStatements(idGroup, idSubjectControl, typeStatementQuery.id)
-            ])
-            .catch(e => { throw e })
+        let [
+            groupQuery, studentsQuery, marksQuery, subjectQuery, countStatements
+        ] = await Promise.all([
+            this.groupRepo.getGroupInfoWithDirector(idGroup),
+            this.studentRepo.getMainInfoByGroup(idGroup),
+            this.marksRepo.getMarksForGroup(idGroup, idSubjectControl),
+            this.subjectRepo.getSubjectInfo(idSubjectControl),
+            this.groupStatementRepo.countStatements(idGroup, idSubjectControl, typeStatementQuery.id)
+        ])
+        .catch(e => { throw e })
 
-            studentsQuery = this.marksRepo.fillMarkInfo(studentsQuery, marksQuery)
+        studentsQuery = this.marksRepo.fillMarkInfo(studentsQuery, marksQuery)
 
-            let info = {
-                year_start: parseInt(groupQuery.date_start),
-                year_end: parseInt(groupQuery.date_start) + 1,
-                type: typeStatementQuery.name as string,
-                number: countStatements + 1,
-            }
+        let info = {
+            year_start: parseInt(groupQuery.date_start),
+            year_end: parseInt(groupQuery.date_start) + 1,
+            type: typeStatementQuery.name as string,
+            number: countStatements + 1,
+        }
 
-            await this.groupStatementRepo.saveStatement(idGroup, idSubjectControl, typeStatementQuery.id, 
-                path, idUser ? idUser : null)
+        await this.groupStatementRepo.saveStatement(idGroup, idSubjectControl, typeStatementQuery.id, 
+            path, idUser ? idUser : null)
 
-            return {
-                students: studentsQuery,
-                group: groupQuery,
-                subject: subjectQuery,
-                info
-            }
-        } catch (e) {
-            console.error(e)
-            throw e
+        return {
+            students: studentsQuery,
+            group: groupQuery,
+            subject: subjectQuery,
+            info
         }
     }
 
     public async getCreditExamDebtStatement(idStudent: number, idGroup: number, idSubjectControl: number, 
-        path: string, idUser: number | undefined) {
-        try {
-            const typeStatementQuery = await this.typeStatementRepo.getByName('ЗЭЛ')
-            if (!typeStatementQuery) throw 'Тип ведомости не определен'
+        path: string, idUser?: number) {
+        const typeStatementQuery = await this.typeStatementRepo.getByName('ЗЭЛ')
+        if (!typeStatementQuery) throw 'Тип ведомости не определен'
 
-            const [
-                groupQuery, subjectQuery, studentQuery
-            ] = await Promise.all([
-                this.groupRepo.getGroupInfoWithDirector(idGroup),
-                this.subjectRepo.getSubjectInfo(idSubjectControl),
-                this.studentRepo.getStudentInfo(idStudent, idGroup, null),
-            ])
-            .catch(e => { throw e }) 
+        const [
+            groupQuery, subjectQuery, studentQuery
+        ] = await Promise.all([
+            this.groupRepo.getGroupInfoWithDirector(idGroup),
+            this.subjectRepo.getSubjectInfo(idSubjectControl),
+            this.studentRepo.getStudentInfo(idStudent, idGroup),
+        ])
+        .catch(e => { throw e }) 
 
-            const countStatements = await this.studentStatementRepo
-                .countStatements(studentQuery.id_students_groups, idSubjectControl, typeStatementQuery.id)
-                .catch(e => { throw e })
+        const countStatements = await this.studentStatementRepo
+            .countStatements(studentQuery.id_students_groups, idSubjectControl, typeStatementQuery.id)
+            .catch(e => { throw e })
 
-            const info = {
-                year_start: parseInt(groupQuery.date_start),
-                year_end: parseInt(groupQuery.date_start) + 1,
-                type: typeStatementQuery.name,
-                number: countStatements + 1,
-                date_sign: moment().format('DD.MM.YYYY').toString(),
-            };
+        const info = {
+            year_start: parseInt(groupQuery.date_start),
+            year_end: parseInt(groupQuery.date_start) + 1,
+            type: typeStatementQuery.name,
+            number: countStatements + 1,
+            date_sign: moment().format('DD.MM.YYYY').toString(),
+        };
 
-            await this.studentStatementRepo.saveStatement(studentQuery.id_students_groups, idSubjectControl, 
-                typeStatementQuery.id, path, idUser ? idUser : null)
+        await this.studentStatementRepo.saveStatement(studentQuery.id_students_groups, idSubjectControl, 
+            typeStatementQuery.id, path, idUser ? idUser : null)
 
-            return {
-                group: groupQuery,
-                student: studentQuery,
-                subject: subjectQuery,
-                info
-            }
-        } catch(e) {
-            console.error(<string> e)
-            throw e
+        return {
+            group: groupQuery,
+            student: studentQuery,
+            subject: subjectQuery,
+            info
         }
+        
     }
 
     public async getCreditExamIndiStatement(idStudent: number, idGroup: number, idFormControl: number, semester: string,
-        path: string, idUser: number | undefined) {
-        try {
-            const typeStatementQuery = await this.typeStatementRepo.getByName('ИВ')
-            if (!typeStatementQuery) throw 'Тип ведомости не определен'
+        path: string, idUser?: number) {
+        const typeStatementQuery = await this.typeStatementRepo.getByName('ИВ')
+        if (!typeStatementQuery) throw 'Тип ведомости не определен'
 
-            const [
-                groupQuery, studentQuery
-            ] = await Promise.all([
-                this.groupRepo.getGroupInfoWithDirector(idGroup),
-                this.studentRepo.getStudentInfo(idStudent, idGroup, '0')
+        const [
+            groupQuery, studentQuery
+        ] = await Promise.all([
+            this.groupRepo.getGroupInfoWithDirector(idGroup),
+            this.studentRepo.getStudentInfo(idStudent, idGroup, 0)
+        ])
+
+        let credits: MarkWithSubjectResponse[] = [],
+            exams: MarkWithSubjectResponse[] = []
+        if (idFormControl === -1) {
+            [exams, credits] = await Promise.all([
+                await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, 'Э', false),
+                await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, 'З', false)
             ])
-    
-            let credits: MarkWithSubjectResponse[] = [],
-                exams: MarkWithSubjectResponse[] = []
-            if (idFormControl === -1) {
-                [exams, credits] = await Promise.all([
-                    await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, true),
-                    await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, false)
-                ])
-            } else {
-                const formControl = await this.formControlRepo.getFormControl(idFormControl)
-                if (!formControl) throw 'Форма контроля не распознана'
-                if (formControl.name === 'экзамен') 
-                    exams = await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, true)
-                else if (formControl.name === 'зачет')
-                    credits =  await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, false)
-            }
-
-            const countStatements = await this.studentStatementRepo
-                .countStatements(studentQuery.id_students_groups, null, typeStatementQuery.id)
-                .catch(e => { throw e })
-
-            const info = {
-                year_start: parseInt(groupQuery.date_start),
-                year_end: parseInt(groupQuery.date_start) + 1,
-                type: typeStatementQuery.name,
-                number: countStatements + 1,
-                date_sign: moment().format('DD.MM.YYYY').toString(),
-                semester,
-            }
-
-            await this.studentStatementRepo.saveStatement(studentQuery.id_students_groups, null, 
-                typeStatementQuery.id, path, idUser ? idUser : null)
-
-
-            return {
-                student: studentQuery,
-                group: groupQuery,
-                credits,
-                exams,
-                info
-            }
-        } catch (e) {
-            console.error(e)
-            throw e
+        } else {
+            const formControl = await this.formControlRepo.getFormControl(idFormControl)
+            if (!formControl) throw 'Форма контроля не распознана'
+            if (formControl.name === 'экзамен') 
+                exams = await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, 'Э', false)
+            else if (formControl.name === 'зачет')
+                credits =  await this.marksRepo.getMarksForStudent(idStudent, idGroup, semester, 'З', false)
         }
+
+        const countStatements = await this.studentStatementRepo
+            .countStatements(studentQuery.id_students_groups, null, typeStatementQuery.id)
+            .catch(e => { throw e })
+
+        const info = {
+            year_start: parseInt(groupQuery.date_start),
+            year_end: parseInt(groupQuery.date_start) + 1,
+            type: typeStatementQuery.name,
+            number: countStatements + 1,
+            date_sign: moment().format('DD.MM.YYYY').toString(),
+            semester,
+        }
+
+        await this.studentStatementRepo.saveStatement(studentQuery.id_students_groups, null, 
+            typeStatementQuery.id, path, idUser ? idUser : null)
+
+
+        return {
+            student: studentQuery,
+            group: groupQuery,
+            credits,
+            exams,
+            info
+        }
+    }
+
+    public async getGroupJournal(idGroup: number, semester: string, isUnion: boolean, idUser: number | null) {
 
     }
 }

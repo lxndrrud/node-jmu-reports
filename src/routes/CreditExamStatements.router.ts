@@ -26,7 +26,7 @@ const creditExamController = new CreditExamStatementsController(
         new StudentStatementRepo(DatabaseConnection),
         new StudyGroupStatementRepo(DatabaseConnection),
         new TypeStatementRepo(DatabaseConnection),
-        new FormControlRepo(DatabaseConnection)
+        new FormControlRepo(DatabaseConnection),
     )
 )
 

@@ -26,7 +26,6 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
         this.creditExamStatementService = creditExamStatementServiceInstance
     }
 
-
     // Зачетно экзаменационная
     public async getCreditExamStatement(req: Request, res: Response) {
         // Получить данные
@@ -45,13 +44,13 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
             pIdSubjecControl = parseInt(idSubjectControl as string),
             pIdUser = parseInt(idUser as string)
 
-        try {
-            const reportPath = `Cont/reports/statements/group/gid_${idGroup}/id_subject_control_${idSubjectControl}`
-            const reportName = `Зач-экз ведомость (${typeStatement})`
-            const templateType = 'education'
-            const templateName = 'Зач-экз ведомость'
-            const path = `${reportPath}/${reportName}.docx` 
+        const reportPath = `Cont/reports/statements/group/gid_${idGroup}/id_subject_control_${idSubjectControl}`
+        const reportName = `Зач-экз ведомость (${typeStatement})`
+        const templateType = 'education'
+        const templateName = 'Зач-экз ведомость'
+        const path = `${reportPath}/${reportName}.docx` 
 
+        try {
             let data = await this.creditExamStatementService.getCreditExamStatement(
                 pIdGroup,
                 pIdSubjecControl,
@@ -84,13 +83,13 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
             parseInt(idStudent as string), parseInt(idUser as string)
         ]
 
-        try {
-            const reportPath = `Cont/reports/student/sid_${idStudent}/creditStatements/id_subject_control_${idSubjectControl}`
-            const reportName = `Хвостовка`
-            const templateType = 'education'
-            const templateName = 'Хвостовка'
-            const path = `${reportPath}/${reportName}.docx` 
+        const reportPath = `Cont/reports/student/sid_${idStudent}/creditStatements/id_subject_control_${idSubjectControl}`
+        const reportName = `Хвостовка`
+        const templateType = 'education'
+        const templateName = 'Хвостовка'
+        const path = `${reportPath}/${reportName}.docx` 
 
+        try {
             const data = await this.creditExamStatementService.getCreditExamDebtStatement(
                 pIdStudent, pIdGroup, pIdSubjectControl, path, pIdUser)
 
@@ -99,10 +98,9 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
         } catch(e) {
             this.errorCreator.internalServer500(res, <string> e)
         }
-
     }
 
-    // Зачетно-экзаменационная на человек
+    // Зачетно-экзаменационная на человека
     public async getCreditExamIndividualStatement(req: Request, res: Response) {
         const {
             idGroup, semester, idFormControl, idStudent, idUser
@@ -120,28 +118,40 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
             parseInt(idStudent as string), parseInt(idUser as string)
         ]
 
-        try {
-            const reportPath = `Cont/reports/student/sid_${idStudent}/personalStatements/semester_${semester}`;
-            const reportName = `Инд зач-экз ведомость`;
-            const templateType = 'education'
-            const templateName = 'Инд зач-экз ведомость';
-            const path = `${reportPath}/${reportName}.docx`
+        const reportPath = `Cont/reports/student/sid_${idStudent}/personalStatements/semester_${semester}`;
+        const reportName = `Инд зач-экз ведомость`;
+        const templateType = 'education'
+        const templateName = 'Инд зач-экз ведомость';
+        const path = `${reportPath}/${reportName}.docx`
 
+        try {
             let data = await this.creditExamStatementService
                 .getCreditExamIndiStatement(pIdStudent, pIdGroup, pIdFormControl, semester as string, path, pIdUser)
             
-            console.log(data)
             await this.reportCreator.sendTemplate(res, data, templateType, templateName, reportPath, reportName)
         } catch (e) {
             this.errorCreator.internalServer500(res, <string> e)
         }
-        
-
-        
     }
 
     // Журнал группы
     public async getGroupJournal(req: Request, res: Response) {
+        const {
+            idGroup, semester, isUnion, idUser
+        } = req.query
 
+        if (!idGroup || !semester) {
+            this.errorCreator.badRequest400(res, 'Недостаточно данных для генерации отчета!')
+            return
+        }
+
+        const [
+            pIdGroup, pIdUser
+        ] = [ parseInt(idGroup as string), parseInt(idUser as string) ]
+
+        // Нормализация семестра под объединение
+        let semesterString = isUnion ? `1:${semester}` : semester;
+
+        let data: any
     }
 }

@@ -24,6 +24,9 @@ import { TypePosition } from './entities/type_position'
 import { StudyGroupStatement } from './entities/study_group_statements'
 import { TypeStatement } from './entities/type_statement'
 import { StudentStatement } from './entities/students_statements'
+import { Order } from './entities/orders'
+import { StudentGroupOrder } from './entities/students_groups_orders'
+import { TypeOrder } from './entities/type_orders'
 
 
 export const DatabaseConnection = new DataSource(<DataSourceOptions>{
@@ -37,6 +40,7 @@ export const DatabaseConnection = new DataSource(<DataSourceOptions>{
         Student, StudentGroup, 
         StudyGroup, Specialty, SpecialtyProfile,  StudentMark,
         FormEducation, LevelEducation, StudyGroupStatement, StudentStatement, TypeStatement,
+        Order, StudentGroupOrder, TypeOrder,
         // PLan
         Subject, FormControl, SubjectControl, SubjectGroup, AcademicHour, CreditUnit,
         SubjectsAcademicHour, SubjectsCreditUnit,

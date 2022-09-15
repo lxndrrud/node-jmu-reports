@@ -38,7 +38,7 @@ export class GroupRepo implements IGroupRepo {
     }
 
     public async getGroupInfoWithDirector(idGroup: number) {
-        let result = await  this.connection.createQueryBuilder(StudyGroup, 'group')
+        const result = await this.connection.createQueryBuilder(StudyGroup, 'group')
             .innerJoinAndSelect('group.levelEducation', 'level')
             .innerJoinAndSelect('group.formEducation', 'form')
             .innerJoinAndSelect('group.specialtyProfile', 'profile')
@@ -56,7 +56,8 @@ export class GroupRepo implements IGroupRepo {
                     .where(`typePosition.name_position = 'Декан'`)
                     .orWhere(`typePosition.name_position = 'Директор'`)
             }))
-            .getOne() as StudyGroup
+            .getOne()
+
 
         if (!result) throw 'Информация по группе не найдена'
         return this.prepareGroup(result)

@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
 import { Student } from './students'
+import { StudentGroupOrder } from './students_groups_orders'
 import { StudentMark } from './students_marks'
 import { StudentStatement } from './students_statements'
 import { StudyGroup } from './study_groups'
@@ -38,4 +39,7 @@ export class StudentGroup {
 
     @OneToMany(() => StudentStatement, studStatement => studStatement.studentGroup)
     studentStatements!: StudentStatement[]
+
+    @OneToMany(() => StudentGroupOrder, studGroupOrder => studGroupOrder.studentGroup)
+    studentGroupOrders!: StudentGroupOrder[] 
 }

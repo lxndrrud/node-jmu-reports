@@ -1,4 +1,5 @@
-import { DataSource } from "typeorm";
+import { Brackets, DataSource } from "typeorm";
+import { Order } from "../entities/orders";
 import { Student } from "../entities/students";
 import { StudentGroup } from "../entities/students_groups";
 import { StudentInfoResponse } from "../types/student.type";
@@ -6,8 +7,10 @@ import { StudentMarkResponse } from "../types/studentMark.type";
 
 
 export interface IStudentRepo {
+    getStudentsByGroup(idGroup: number, status?: number): Promise<Student[]>
     getMainInfoByGroup(idGroup: number): Promise<StudentMarkResponse[]>
-    getStudentInfo(idStudent: number, idGroup: number, status: string | null): Promise<StudentInfoResponse>
+    getStudentInfo(idStudent: number, idGroup: number, status?: number): Promise<StudentInfoResponse>
+    getBasisLearning(idStudentGroup: number): Promise<"Бюджет" | "Контракт" | "Не определено">
 }
 
 export class StudentRepo implements IStudentRepo {
@@ -24,23 +27,49 @@ export class StudentRepo implements IStudentRepo {
     }
 
     public async getMainInfoByGroup(idGroup: number) {
-        let students = await this.connection.createQueryBuilder(Student, 'student')
-            .innerJoinAndSelect('student.studentGroup', 'studentGroup')
-            .where('studentGroup.idGroup = :idGroup', { idGroup })
-            .andWhere('studentGroup.status = :status', {status: 0})
-            .getMany()
-
+        const students = await this.getStudentsByGroup(idGroup, 0)
         return this.prepareStudentsMarks(students)
     }
 
-    public async getStudentInfo(idStudent: number, idGroup: number, status: string | null) {
+    public async getStudentsByGroup(idGroup: number, status?: number) {
+        let studentsQuery = this.connection.createQueryBuilder(Student, 'student')
+            .innerJoinAndSelect('student.studentGroup', 'studentGroup')
+            .where('studentGroup.idGroup = :idGroup', { idGroup })
+        if (status) studentsQuery.andWhere('studentGroup.status = :status', { status: 0})
+
+        const students = await studentsQuery.getMany()
+        return students
+    }
+
+    public async getBasisLearning(idStudentGroup: number) {
+        const basisLearning = await this.connection.createQueryBuilder(Order, 'o')
+            .innerJoinAndSelect('o.typeOrder', 'to')
+            .innerJoinAndSelect('o.studentGroupOrders', 'sgo')
+            .innerJoinAndSelect('sgo.studentGroup', 'sg')
+            .where('sg.id = :idStudentGroup', { idStudentGroup })
+            .andWhere(new Brackets(qb => {
+                qb.where('to.id = 12').orWhere('to.id = 1').orWhere('to.id = 3').orWhere('to.id = 2')
+            }))
+            .orderBy('sgo.id', 'DESC')
+            .getOne()
+
+        if (basisLearning && (basisLearning.idTypeOrder === 1 || basisLearning.idTypeOrder === 2)) {
+            return 'Бюджет'
+        } else if (basisLearning && (basisLearning.idTypeOrder === 3 || basisLearning.idTypeOrder === 12)) {
+            return 'Контракт'
+        } else {
+            return 'Не определено'
+        }
+    }
+
+    public async getStudentInfo(idStudent: number, idGroup: number, status?: number) {
         let query = this.connection.createQueryBuilder(Student, 'student')
             .innerJoinAndSelect('student.studentGroup', 'studentGroup')
             .where('studentGroup.idStudent = :idStudent', { idStudent })
             .andWhere('studentGroup.idGroup = :idGroup', { idGroup })
         if (status) query.andWhere('studentGroup.status = :status', { status })
 
-        let student = await query.getOne() as Student
+        let student = await query.getOne()
         if (!student) throw 'Информация по студенту не найдена'
         return this.prepareStudentInfo(student)
     }
