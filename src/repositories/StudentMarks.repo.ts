@@ -10,7 +10,7 @@ import { ISubjectRepo } from "./Subject.repo";
 
 export interface IMarksRepo {
     getMarksForGroup(idGroup: number, idSubjectControl: number): Promise<StudentMarkResponse[]>
-    getMarksForStudent(idStudent: number, idGroup: number, semester: string, markType: 'З' | 'ДифЗ' | 'КР' | 'Э', isUnion: boolean): 
+    getMarksForStudent(idStudent: number, idGroup: number, semester: string, markType: "ДифЗач" | "КР" | "Зач" | "Экз", isUnion: boolean): 
     Promise<MarkWithSubjectResponse[]>
     fillMarkInfo(students: StudentMarkResponse[], marks: StudentMarkResponse[]): StudentMarkResponse[]
 }
@@ -27,35 +27,6 @@ export class MarksRepo implements IMarksRepo {
         this.subjectRepo = subjectRepoInstance
     }
 
-    /*
-    odule.exports.diffCredits = (idStudentGroup, semester, isUnion) => {
-  // diff credits
-  // получение всех оценок по диф зачетам без академических часов и т.д
-
-  // Знак выражения: если isUnion, то <=, иначе =
-  let signOfExpression = isUnion ? '<=' : '=';
-
-  return education('plan_subjects_control as sc')
-    .select(
-      'sub.name as subject_name',
-      'fc.name as form_control_name',
-      'm.ball_5',
-      'm.ball_100',
-      'm.ball_ects',
-      'sc.date_exam',
-    )
-    .join('plan_form_control as fc', 'fc.id', 'sc.id_form_control')
-    .join('plan_subjects_group as sep', 'sep.id_subject', 'sc.id_subject_group')
-    .join('plan_subjects as sub', 'sub.id', 'sep.id_subject')
-    .leftJoin('students_marks as m', 'm.id_subject_control', 'sc.id')
-    .where('sc.semester', signOfExpression, semester)
-    .andWhere('m.id_students_groups', idStudentGroup)
-    .andWhere('fc.name', 'зачетсоц.')
-    .distinct();
-};
-
-    */
-
     public async getMarksForGroup(idGroup: number, idSubjectControl: number) {
         const idsStudentGroups = await this.connection.getRepository(StudentGroup).find({
             select: {
@@ -69,7 +40,6 @@ export class MarksRepo implements IMarksRepo {
         let marks = await  this.connection.createQueryBuilder(StudentGroup, 'sg')
             .innerJoinAndSelect('sg.student', 's')
             .leftJoinAndSelect('sg.marks', 'm')
-            //.whereInIds(idsStudentGroups)
             .where('sg.id IN (:...idsStudentGroups)', { idsStudentGroups: idsStudentGroups.map(item => item.id) })
             .andWhere('m.id_subject_control = :idSubjectControl', { idSubjectControl })
             .andWhere('sg.status = :status', { status: 0 })
@@ -79,11 +49,11 @@ export class MarksRepo implements IMarksRepo {
     }
 
     public async getMarksForStudent(idStudent: number, idGroup: number, semester: string, 
-        markType: 'З' | 'ДифЗ' | 'КР' | 'Э', isUnion: boolean) {
+        markType: 'Зач' | 'ДифЗач' | 'КР' | 'Экз', isUnion: boolean) {
 
         const signOfExpression = isUnion ? '<=' : '='
         const map = {
-            'З': 'зачет',  'ДифЗ': 'зачетсоц.',  'КР': 'кр',  'Э': 'экзамен'
+            'Зач': 'зачет',  'ДифЗач': 'зачетсоц.',  'КР': 'кр',  'Экз': 'экзамен'
         }
         const formControl = map[markType]
         const subjectGroups = await this.connection.createQueryBuilder(SubjectGroup, 'subjG')
@@ -165,7 +135,7 @@ export class MarksRepo implements IMarksRepo {
                 ? moment(subjectControl.dateExam).format('DD-MM-YYYY').toString() 
                 : ' ',
             ball_5: mark
-                ? this.unbalancing(mark.ballECTS as BallECTS)
+                ? mark.ball5
                 : ' ',
             ball_100: mark 
                 ? mark.ball100

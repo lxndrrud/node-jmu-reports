@@ -2,6 +2,8 @@ import { Request, Response } from 'express'
 import { ICreditExamStatementService } from '../services/CreditExamStatement.service'
 import { HTTPErrorCreator } from '../utils/HTTPErrorCreator'
 import { ReportCreator } from '../utils/ReportCreator'
+import fs from 'fs'
+import path from 'path'
 
 
 export interface ICreditExamStatementsController {
@@ -136,6 +138,7 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
 
     // Журнал группы
     public async getGroupJournal(req: Request, res: Response) {
+        console.log('kek')
         const {
             idGroup, semester, isUnion, idUser
         } = req.query
@@ -152,6 +155,28 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
         // Нормализация семестра под объединение
         let semesterString = isUnion ? `1:${semester}` : semester;
 
-        let data: any
+        const workBook = await this.creditExamStatementService
+            .getGroupJournal(pIdGroup, semester as string, !!isUnion, pIdUser)
+
+        const relationalJournalsDirectory = './storage/Cont/reports/groupJournals';
+
+        if (!fs.existsSync(relationalJournalsDirectory)) {
+            fs.mkdirSync(relationalJournalsDirectory, { recursive: true });
+        }
+    
+        const fileDescriptor = `${relationalJournalsDirectory}/Журнал_группы_ы.xlsx`;
+    
+        // Запись в файл
+        try{
+            workBook.write(fileDescriptor, async (err: string) => {
+                if (err) throw err;
+                else {
+                    res.status(200).sendFile(path.resolve(fileDescriptor));
+                }
+            });
+        } catch(e) {
+            this.errorCreator.internalServer500(res, 'kek')
+        }
+        
     }
 }
