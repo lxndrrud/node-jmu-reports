@@ -10,14 +10,17 @@ import { StudyGroupStatementRepo } from '../repositories/StudyGroupStatement.rep
 import { SubjectRepo } from '../repositories/Subject.repo';
 import { TypeStatementRepo } from '../repositories/TypeStatement.repo';
 import { CreditExamStatementService } from '../services/CreditExamStatement.service';
-import { HTTPErrorCreator } from '../utils/HTTPErrorCreator';
+import { ExcelDataService } from '../services/ExcelData.service';
+import { ExcelFacadeService } from '../services/ExcelFacade.service';
+import { ExcelPreparatorService } from '../services/ExcelPreparator.service';
+import { HttpErrorCreator } from '../utils/HttpErrorCreator';
 import { ReportCreator } from '../utils/ReportCreator';
 
 export const CreditExamRouter = Router()
 
 const creditExamController = new CreditExamStatementsController(
-    new HTTPErrorCreator(),
-    new ReportCreator(new HTTPErrorCreator()),
+    new HttpErrorCreator(),
+    new ReportCreator(new HttpErrorCreator()),
     new CreditExamStatementService(
         new StudentRepo(DatabaseConnection),
         new MarksRepo(DatabaseConnection, new SubjectRepo(DatabaseConnection)),
@@ -27,6 +30,16 @@ const creditExamController = new CreditExamStatementsController(
         new StudyGroupStatementRepo(DatabaseConnection),
         new TypeStatementRepo(DatabaseConnection),
         new FormControlRepo(DatabaseConnection),
+    ),
+    new ExcelFacadeService(
+        new ExcelDataService(
+            new StudentRepo(DatabaseConnection),
+            new MarksRepo(DatabaseConnection, new SubjectRepo(DatabaseConnection)),
+            new SubjectRepo(DatabaseConnection)
+        ),
+        new ExcelPreparatorService(new StudentRepo(DatabaseConnection)),
+        new StudyGroupStatementRepo(DatabaseConnection),
+        new TypeStatementRepo(DatabaseConnection)
     )
 )
 

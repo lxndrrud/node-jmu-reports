@@ -15,8 +15,8 @@ export class StudyGroupStatement {
     @Column({ name: 'id_type_statement' })
     idTypeStatement!: number 
 
-    @Column({ name: 'id_subject_control' , nullable: true })
-    idSubjectControl!: number
+    @Column({ type: 'int', name: 'id_subject_control' , nullable: true, unsigned: true })
+    idSubjectControl!: number | null
 
     @Column({ type: 'int', name: 'id_user', nullable: true, unsigned: true })
     idUser!: number | null
@@ -24,8 +24,8 @@ export class StudyGroupStatement {
     @Column()
     path!: string
 
-    @Column({ nullable: true })
-    semester!: string
+    @Column({ type: 'varchar', nullable: true })
+    semester!: string | null
 
     @Column({ name: 'date_crt' })
     dateCreated!: string
@@ -38,7 +38,7 @@ export class StudyGroupStatement {
     @JoinColumn({ name: 'id_type_statement' })
     typeStatement!: TypeStatement
 
-    @ManyToOne(() => SubjectControl, subjectControl => subjectControl.groupStatements, { nullable:true })
+    @ManyToOne(() => SubjectControl, subjectControl => subjectControl.groupStatements, { nullable: true })
     @JoinColumn({ name: 'id_subject_control' })
     subjectControl!: SubjectControl 
 }

@@ -48,7 +48,7 @@ export const DatabaseConnection = new DataSource(<DataSourceOptions>{
         Department, 
         Position, PersonsPosition, Person, TypePosition],
     synchronize: false,
-    logging: true
+    logging: false
 })
 
 

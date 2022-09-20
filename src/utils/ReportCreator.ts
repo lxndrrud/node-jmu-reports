@@ -1,9 +1,15 @@
 import { createReport } from 'docx-templates'
 import { Response } from 'express'
 import fs from 'fs'
-import { HTTPErrorCreator } from './HTTPErrorCreator'
+import path from 'path'
+import { IHttpErrorCreator } from './HttpErrorCreator'
 
-export class ReportCreator {
+export interface IReportCreator {
+    sendTemplate(res: Response, data: any, templateType: string, templateName: string, reportPath: string, reportName: string): Promise<void>
+    sendExcelDocument(workBook: any, filepath: string, filename: string, res: Response): Promise<void>
+}
+
+export class ReportCreator implements IReportCreator {
     private pathToTemplates
     private pathToStorage
     private minHeader
@@ -11,7 +17,7 @@ export class ReportCreator {
     private errorCreator
 
     constructor(
-        errorCreatorInstance: HTTPErrorCreator
+        errorCreatorInstance: IHttpErrorCreator
     ) {
         this.minHeader = [
             'ГОСУДАРСТВЕННОЕ ОБРАЗОВАТЕЛЬНОЕ УЧРЕЖДЕНИЕ',
@@ -25,6 +31,23 @@ export class ReportCreator {
         this.pathToTemplates = 'public/reportTemplates/'
 
         this.errorCreator = errorCreatorInstance
+    }
+
+    public async sendExcelDocument(workBook: any, filepath: string, filename: string, res: Response) {
+        const relationalJournalsDirectory = `./storage${filepath}`;
+        if (!fs.existsSync(relationalJournalsDirectory)) {
+            fs.mkdirSync(relationalJournalsDirectory, { recursive: true });
+        }
+        const fileDescriptor = `${relationalJournalsDirectory}/${filename}.xlsx`;
+        await new Promise((resolve, reject) => {
+            workBook.write(fileDescriptor, async (err: string) => {
+                if (err) reject(err)
+                else {
+                    res.status(200).sendFile(path.resolve(fileDescriptor));
+                    resolve(1)
+                }
+            });
+        })
     }
 
     public async sendTemplate(res: Response, data: any, templateType: string, templateName: string, 

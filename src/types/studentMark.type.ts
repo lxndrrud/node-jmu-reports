@@ -17,7 +17,7 @@ export type MarkWithSubjectResponse = {
     form_control_name: string;
     lecturer: any;
     date_exam: string;
-    ball_5: string | null;
+    ball_5: number | null;
     ball_100: number | null;
     ball_ects: BallECTS | null;
 }
