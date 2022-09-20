@@ -24,9 +24,7 @@ export class StudentStatementRepo implements IStudentStatementRepo {
             where: {
                 idStudentsGroups, 
                 idTypeStatement,
-                idSubjectControl: idSubjectControl 
-                     ? idSubjectControl
-                     : IsNull()
+                idSubjectControl: idSubjectControl ? idSubjectControl: IsNull()
             }
         })
     }

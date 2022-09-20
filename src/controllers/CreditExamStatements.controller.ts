@@ -1,9 +1,8 @@
 import { Request, Response } from 'express'
 import { ICreditExamStatementService } from '../services/CreditExamStatement.service'
-import { HTTPErrorCreator } from '../utils/HTTPErrorCreator'
-import { ReportCreator } from '../utils/ReportCreator'
-import fs from 'fs'
-import path from 'path'
+import { IHttpErrorCreator } from '../utils/HttpErrorCreator'
+import { IReportCreator, ReportCreator } from '../utils/ReportCreator'
+import { IExcelFacadeService } from '../services/ExcelFacade.service'
 
 
 export interface ICreditExamStatementsController {
@@ -17,15 +16,18 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
     protected errorCreator
     protected reportCreator
     protected creditExamStatementService
+    protected excelFacadeService
 
     constructor(
-        errorCreatorInstance: HTTPErrorCreator,
-        reportCreatorInstance: ReportCreator,
-        creditExamStatementServiceInstance: ICreditExamStatementService
+        errorCreatorInstance:IHttpErrorCreator,
+        reportCreatorInstance: IReportCreator,
+        creditExamStatementServiceInstance: ICreditExamStatementService,
+        excelFacadeServiceInstance: IExcelFacadeService
     ) {
         this.errorCreator = errorCreatorInstance
         this.reportCreator = reportCreatorInstance
         this.creditExamStatementService = creditExamStatementServiceInstance
+        this.excelFacadeService = excelFacadeServiceInstance
     }
 
     // Зачетно экзаменационная
@@ -138,7 +140,6 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
 
     // Журнал группы
     public async getGroupJournal(req: Request, res: Response) {
-        console.log('kek')
         const {
             idGroup, semester, isUnion, idUser
         } = req.query
@@ -152,31 +153,14 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
             pIdGroup, pIdUser
         ] = [ parseInt(idGroup as string), parseInt(idUser as string) ]
 
-        // Нормализация семестра под объединение
-        let semesterString = isUnion ? `1:${semester}` : semester;
+        try {
+            const workBook = await this.excelFacadeService.getGroupJournal(pIdGroup, semester as string,
+                !!isUnion, `Cont/reports/groupJournals/Журнал_группы_${idGroup}`, pIdUser)
 
-        const workBook = await this.creditExamStatementService
-            .getGroupJournal(pIdGroup, semester as string, !!isUnion, pIdUser)
-
-        const relationalJournalsDirectory = './storage/Cont/reports/groupJournals';
-
-        if (!fs.existsSync(relationalJournalsDirectory)) {
-            fs.mkdirSync(relationalJournalsDirectory, { recursive: true });
+            await this.reportCreator.sendExcelDocument(workBook, '/Cont/reports/groupJournals', 
+                `Журнал_группы_${idGroup}`, res)
+        } catch (error) {
+            this.errorCreator.internalServer500(res, <string> error)
         }
-    
-        const fileDescriptor = `${relationalJournalsDirectory}/Журнал_группы_ы.xlsx`;
-    
-        // Запись в файл
-        try{
-            workBook.write(fileDescriptor, async (err: string) => {
-                if (err) throw err;
-                else {
-                    res.status(200).sendFile(path.resolve(fileDescriptor));
-                }
-            });
-        } catch(e) {
-            this.errorCreator.internalServer500(res, 'kek')
-        }
-        
     }
 }

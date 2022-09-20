@@ -1,10 +1,10 @@
-import { DataSource } from "typeorm";
+import { DataSource, IsNull } from "typeorm";
 import { StudyGroupStatement } from "../entities/study_group_statements";
 
 
 export interface IStudyGroupStatementRepo {
     countStatements(idGroup: number, idSubjectControl: number, idTypeStatement: number): Promise<number>
-    saveStatement(idGroup: number, idSubjectControl: number, idTypeStatement: number, path: string, idUser: number | null): Promise<void>
+    saveStatement(idGroup: number, idSubjectControl: number | null, idTypeStatement: number, path: string, semester: string | null, idUser: number | null): Promise<void>
 }
 
 export class StudyGroupStatementRepo implements IStudyGroupStatementRepo {
@@ -26,11 +26,14 @@ export class StudyGroupStatementRepo implements IStudyGroupStatementRepo {
         })
     }
     
-    public async saveStatement(idGroup: number, idSubjectControl: number, 
-        idTypeStatement: number, path: string, idUser: number | null) {
+    public async saveStatement(idGroup: number, idSubjectControl: number | null, 
+        idTypeStatement: number, path: string, semester: string | null, idUser: number | null) {
         const checkExist = await this.groupStatementRepo.findOne({
             where: {
-                idGroup, idSubjectControl, idTypeStatement
+                idGroup, 
+                idTypeStatement,
+                idSubjectControl: idSubjectControl ? idSubjectControl : IsNull(),
+                semester: semester ? semester : IsNull()
             }
         })
 
@@ -41,6 +44,7 @@ export class StudyGroupStatementRepo implements IStudyGroupStatementRepo {
             newStatement.idTypeStatement = idTypeStatement
             newStatement.path = path
             newStatement.idUser = idUser
+            newStatement.semester = semester
 
             await this.groupStatementRepo.save(newStatement)
             return

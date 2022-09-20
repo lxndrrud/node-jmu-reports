@@ -75,8 +75,8 @@ export class SubjectRepo implements ISubjectRepo {
     public async getSubjectsForGroup(idGroup: number, semester: string, isUnion: boolean) {
         const signOfExpression = isUnion ? '<=' : '=' 
         const subjects = await this.connection.createQueryBuilder(Subject, 'subj')
-            .innerJoinAndSelect('subj.subjectGroup', 'subjG')
-            .innerJoinAndSelect('subjG.subjectControl', 'sc')
+            .innerJoinAndSelect('subj.subjectGroups', 'subjG')
+            .innerJoinAndSelect('subjG.subjectControls', 'sc')
             .innerJoinAndSelect('sc.formControl', 'fc')
             .innerJoin('subjG.group', 'g')
             .where('g.id = :idGroup', { idGroup })

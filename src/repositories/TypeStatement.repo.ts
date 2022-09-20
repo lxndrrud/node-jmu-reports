@@ -3,6 +3,7 @@ import { TypeStatement } from "../entities/type_statement";
 
 export interface ITypeStatementRepo {
     getByName(name: string): Promise<TypeStatement | null>
+    getAll(): Promise<TypeStatement[]>
 }
 
 export class TypeStatementRepo implements ITypeStatementRepo {
@@ -22,5 +23,9 @@ export class TypeStatementRepo implements ITypeStatementRepo {
                 name
             }
         })
+    }
+
+    public async getAll() {
+        return this.typeStatementRepo.find()
     }
 }
