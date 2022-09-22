@@ -7,6 +7,7 @@ export interface IHttpErrorCreator {
 
 export class HttpErrorCreator implements IHttpErrorCreator {
     public internalServer500(res: Response, error: string) {
+        console.error(error)
         res.status(500).send({
             message: "Внутренняя ошибка: " + error
         })

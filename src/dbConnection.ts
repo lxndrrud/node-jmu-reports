@@ -52,8 +52,8 @@ export const DatabaseConnection = new DataSource(<DataSourceOptions>{
 })
 
 
-export function InitConnection() {
-    DatabaseConnection.initialize()
+export async function InitConnection() {
+    return DatabaseConnection.initialize()
     .then(async () => {
         console.log('⚡️⚡️⚡️ Подключение к базе установлено ⚡️⚡️⚡️')
     })

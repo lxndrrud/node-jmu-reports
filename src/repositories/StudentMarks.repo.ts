@@ -36,6 +36,7 @@ export class MarksRepo implements IMarksRepo {
                 idGroup: idGroup
             }
         })
+        if (idsStudentGroups.length === 0) throw new Error('Студенты для группы не найдены!')
 
         let marks = await  this.connection.createQueryBuilder(StudentGroup, 'sg')
             .innerJoinAndSelect('sg.student', 's')
