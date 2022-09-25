@@ -94,7 +94,7 @@ export class ReportCreator implements IReportCreator {
           'Content-Type',
           'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         );
-        res.setHeader('Content-Disposition', 'attachment; filename=report.docx');
+        res.setHeader('Content-Disposition', `attachment; filename=${reportName}.docx`);
         file.pipe(res);
     }
 

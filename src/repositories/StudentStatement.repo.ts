@@ -29,7 +29,7 @@ export class StudentStatementRepo implements IStudentStatementRepo {
         })
     }
 
-    public async saveStatement(idStudentsGroups: number, idSubjectControl: number | null, 
+    public async saveUpdateStatement(idStudentsGroups: number, idSubjectControl: number | null, 
         idTypeStatement: number, path: string, idUser: number | null) {
     
         const checkExist = await this.studentStatementRepo.findOne({
@@ -57,5 +57,18 @@ export class StudentStatementRepo implements IStudentStatementRepo {
         checkExist.path = path
         checkExist.idUser = idUser
         await this.studentStatementRepo.save(checkExist)
+    }
+
+    public async saveStatement(idStudentsGroups: number, idSubjectControl: number | null, 
+        idTypeStatement: number, path: string, idUser: number | null) {
+            
+        const newStatement = new StudentStatement()
+        newStatement.idStudentsGroups = idStudentsGroups
+        newStatement.idSubjectControl = idSubjectControl
+        newStatement.idTypeStatement = idTypeStatement
+        newStatement.path = path
+        newStatement.idUser = idUser
+
+        await this.studentStatementRepo.save(newStatement)
     }
 }

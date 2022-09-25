@@ -3,6 +3,7 @@ import { ICreditExamStatementService } from '../services/CreditExamStatement.ser
 import { IHttpErrorCreator } from '../utils/HttpErrorCreator'
 import { IReportCreator, ReportCreator } from '../utils/ReportCreator'
 import { IExcelFacadeService } from '../services/ExcelFacade.service'
+import moment from 'moment'
 
 
 export interface ICreditExamStatementsController {
@@ -36,24 +37,29 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
         const {
             idGroup, idSubjectControl, typeStatement, idUser
         } = req.query
-        
         // Валидация
-        if (!idGroup || !idSubjectControl || !typeStatement) {
-            this.errorCreator.badRequest400(res, 'Недостаточно данных для генерации отчёта!')
+        if (!idGroup) {
+            this.errorCreator.badRequest400(res, 'Не указан идентификатор группы!')
             return
         }
-
+        if (!idSubjectControl) {
+            this.errorCreator.badRequest400(res, 'Не указан идентификатор предмето-контроля!')
+            return
+        }
+        if (!typeStatement) {
+            this.errorCreator.badRequest400(res, 'Не указан тип ведомости!')
+            return
+        }
         // Преобразование к типам
         const pIdGroup = parseInt(idGroup as string), 
             pIdSubjecControl = parseInt(idSubjectControl as string),
             pIdUser = parseInt(idUser as string)
-
+        // Инициализация переменных для генерации и сохраненеия отчета
         const reportPath = `Cont/reports/statements/group/gid_${idGroup}/id_subject_control_${idSubjectControl}`
-        const reportName = `Зач-экз ведомость (${typeStatement})`
+        const reportName = `Zach-ekz_vedomost_${moment().format('DD.MM.YYYY_hh-mm').toString()}`
         const templateType = 'education'
         const templateName = 'Зач-экз ведомость'
         const path = `${reportPath}/${reportName}.docx` 
-
         try {
             let data = await this.creditExamStatementService.getCreditExamStatement(
                 pIdGroup,
@@ -74,29 +80,34 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
         const { 
             idGroup, idSubjectControl, idStudent, idUser
         } = req.query
-
-        if (!idGroup || !idSubjectControl || !idStudent) {
-            this.errorCreator.badRequest400(res, 'Недостаточно данных для генерации отчета!')
+        // Валидация тела запроса
+        if (!idGroup) {
+            this.errorCreator.badRequest400(res, 'Не указан идентификатор группы!')
             return
         }
-
+        if (!idSubjectControl) {
+            this.errorCreator.badRequest400(res, 'Не указан идентификатор предмето-контроля!')
+            return
+        }
+        if (!idStudent) {
+            this.errorCreator.badRequest400(res, 'Не указан идентификатор студента!')
+            return
+        }
         const [
             pIdGroup, pIdSubjectControl, pIdStudent, pIdUser
         ] = [
             parseInt(idGroup as string), parseInt(idSubjectControl as string),
             parseInt(idStudent as string), parseInt(idUser as string)
         ]
-
+        // Инициализация переменных для генерации и сохраненеия отчета
         const reportPath = `Cont/reports/student/sid_${idStudent}/creditStatements/id_subject_control_${idSubjectControl}`
-        const reportName = `Хвостовка`
+        const reportName = `Hvostovka_${moment().format('DD.MM.YYYY_hh-mm').toString()}`
         const templateType = 'education'
         const templateName = 'Хвостовка'
         const path = `${reportPath}/${reportName}.docx` 
-
         try {
             const data = await this.creditExamStatementService.getCreditExamDebtStatement(
                 pIdStudent, pIdGroup, pIdSubjectControl, path, pIdUser)
-
 
             await this.reportCreator.sendTemplate(res, data, templateType, templateName, reportPath, reportName)
         } catch(e) {
@@ -106,28 +117,39 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
 
     // Зачетно-экзаменационная на человека
     public async getCreditExamIndividualStatement(req: Request, res: Response) {
+        // Получить данные
         const {
             idGroup, semester, idFormControl, idStudent, idUser
         } = req.query
-
-        if (!idGroup || !semester || !idFormControl || !idStudent) {
-            this.errorCreator.badRequest400(res, 'Недостаточно данных для генерации отчета!')
+        // Валидация
+        if (!idGroup) {
+            this.errorCreator.badRequest400(res, 'Не указан идентификатор групп!')
             return
         }
-
+        if (semester) {
+            this.errorCreator.badRequest400(res, 'Не указан семестр!')
+            return
+        }
+        if (!idFormControl) {
+            this.errorCreator.badRequest400(res, 'Не указан идентификатор формы контроля!')
+            return
+        }
+        if (!idStudent) {
+            this.errorCreator.badRequest400(res, 'Не указан идентификатор студента!')
+            return
+        }
         const [
             pIdGroup, pIdFormControl, pIdStudent, pIdUser
         ] = [
             parseInt(idGroup as string), parseInt(idFormControl as string),
             parseInt(idStudent as string), parseInt(idUser as string)
         ]
-
+        // Инициализация переменных для генерации и сохраненеия отчета
         const reportPath = `Cont/reports/student/sid_${idStudent}/personalStatements/semester_${semester}`;
-        const reportName = `Инд зач-экз ведомость`;
+        const reportName = `Ind_zach_vedomost_${moment().format('DD.MM.YYYY_hh-mm').toString()}`;
         const templateType = 'education'
         const templateName = 'Инд зач-экз ведомость';
         const path = `${reportPath}/${reportName}.docx`
-
         try {
             let data = await this.creditExamStatementService
                 .getCreditExamIndiStatement(pIdStudent, pIdGroup, pIdFormControl, semester as string, path, pIdUser)
@@ -140,25 +162,29 @@ export class CreditExamStatementsController implements ICreditExamStatementsCont
 
     // Журнал группы
     public async getGroupJournal(req: Request, res: Response) {
+        // Получить данные
         const {
             idGroup, semester, isUnion, idUser
         } = req.query
-
-        if (!idGroup || !semester) {
-            this.errorCreator.badRequest400(res, 'Недостаточно данных для генерации отчета!')
+        // Валидация
+        if (!idGroup) {
+            this.errorCreator.badRequest400(res, 'Не указан идентификатор группы!')
             return
         }
-
+        if (!semester) {
+            this.errorCreator.badRequest400(res, 'Не указан семестр!')
+            return
+        }
         const [
             pIdGroup, pIdUser
         ] = [ parseInt(idGroup as string), parseInt(idUser as string) ]
-
         try {
             const workBook = await this.excelFacadeService.getGroupJournal(pIdGroup, semester as string,
-                !!isUnion, `Cont/reports/groupJournals/Журнал_группы_${idGroup}`, pIdUser)
+                !!isUnion, `Cont/reports/groupJournals/Zhurnal_gruppy_${idGroup}_${moment().format('DD.MM.YYYY_hh-mm').toString()}`, 
+                pIdUser)
 
             await this.reportCreator.sendExcelDocument(workBook, '/Cont/reports/groupJournals', 
-                `Журнал_группы_${idGroup}`, res)
+                `Zhurnal_gruppy_${idGroup}_${moment().format('DD.MM.YYYY_hh-mm').toString()}`, res)
         } catch (error) {
             this.errorCreator.internalServer500(res, <string> error)
         }

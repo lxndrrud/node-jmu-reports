@@ -26,7 +26,7 @@ export class StudyGroupStatementRepo implements IStudyGroupStatementRepo {
         })
     }
     
-    public async saveStatement(idGroup: number, idSubjectControl: number | null, 
+    public async saveUpdateStatement(idGroup: number, idSubjectControl: number | null, 
         idTypeStatement: number, path: string, semester: string | null, idUser: number | null) {
         const checkExist = await this.groupStatementRepo.findOne({
             where: {
@@ -53,5 +53,19 @@ export class StudyGroupStatementRepo implements IStudyGroupStatementRepo {
         checkExist.path = path
         checkExist.idUser = idUser
         await this.groupStatementRepo.save(checkExist)
+    }
+
+    public async saveStatement(idGroup: number, idSubjectControl: number | null, 
+        idTypeStatement: number, path: string, semester: string | null, idUser: number | null) {
+            
+        const newStatement = new StudyGroupStatement()
+        newStatement.idGroup = idGroup
+        newStatement.idSubjectControl = idSubjectControl
+        newStatement.idTypeStatement = idTypeStatement
+        newStatement.path = path
+        newStatement.idUser = idUser
+        newStatement.semester = semester
+
+        await this.groupStatementRepo.save(newStatement)
     }
 }
